@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Webhooks } from "@octokit/webhooks";
+import { getInstallationOctokit } from "@/lib/github/app-auth";
 import {
   markDeployed,
   recordCommit,
@@ -12,6 +13,16 @@ import {
 function toGithubRepo(repo: { id: number; name: string; full_name: string; private: boolean }) {
   const [owner] = repo.full_name.split("/");
   return { id: repo.id, name: repo.name, owner, fullName: repo.full_name, isPrivate: repo.private };
+}
+
+// The `repositories`/`repositories_added` payloads on installation events
+// are minimal (no open_issues_count), so newly-installed repos need an
+// explicit API call to seed their pet with the real current count —
+// otherwise a repo installed with pre-existing open issues would report
+// healthy until its next issue webhook. See docs/open-questions.md.
+async function fetchOpenIssueCount(installationId: number, owner: string, repo: string) {
+  const { data } = await getInstallationOctokit(installationId).rest.repos.get({ owner, repo });
+  return data.open_issues_count;
 }
 
 let webhooksInstance: Webhooks | null = null;
@@ -39,13 +50,25 @@ function getWebhooks(): Webhooks {
     });
 
     for (const repo of payload.repositories ?? []) {
-      await upsertRepo(payload.installation.id, toGithubRepo(repo as never));
+      const githubRepo = toGithubRepo(repo as never);
+      const openIssueCount = await fetchOpenIssueCount(
+        payload.installation.id,
+        githubRepo.owner,
+        githubRepo.name,
+      );
+      await upsertRepo(payload.installation.id, githubRepo, openIssueCount);
     }
   });
 
   webhooks.on("installation_repositories.added", async ({ payload }) => {
     for (const repo of payload.repositories_added) {
-      await upsertRepo(payload.installation.id, toGithubRepo(repo as never));
+      const githubRepo = toGithubRepo(repo as never);
+      const openIssueCount = await fetchOpenIssueCount(
+        payload.installation.id,
+        githubRepo.owner,
+        githubRepo.name,
+      );
+      await upsertRepo(payload.installation.id, githubRepo, openIssueCount);
     }
   });
 
