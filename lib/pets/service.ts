@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { installations, repos, pets } from "@/lib/db/schema";
 import { boostedHealth } from "./health";
@@ -72,29 +72,29 @@ export async function recordCommit(repoId: number) {
 // Release published (or an explicit MCP deploy call): enter the deployed
 // phase. See docs/adr/004-deployment-signal.md.
 export async function markDeployed(repoId: number) {
-  const pet = await getPetByRepoId(repoId);
-  if (!pet) return;
-
-  // Recompute sick from the issue count already on the row — otherwise a
-  // repo that already had open issues before deploying would enter the
-  // deployed phase with sick still false.
+  // sick is derived from open_issue_count within this same UPDATE, rather
+  // than from a separately-read pet object, so a concurrent issue webhook
+  // for the same repo can't have its write clobbered by this one (or vice
+  // versa) — see the review discussion on PR #3.
   await db
     .update(pets)
-    .set({ phase: "deployed", sick: pet.openIssueCount > 0, updatedAt: new Date() })
+    .set({
+      phase: "deployed",
+      sick: sql`${pets.openIssueCount} > 0`,
+      updatedAt: new Date(),
+    })
     .where(eq(pets.repoId, repoId));
 }
 
 // Issues opened/closed: only affects Sick status once a pet is deployed.
 // See docs/adr/005-sickness-signal.md.
 export async function setOpenIssueCount(repoId: number, openIssueCount: number) {
-  const pet = await getPetByRepoId(repoId);
-  if (!pet) return;
-
+  // sick derived from phase within this same UPDATE — see markDeployed.
   await db
     .update(pets)
     .set({
       openIssueCount,
-      sick: pet.phase === "deployed" && openIssueCount > 0,
+      sick: sql`${pets.phase} = 'deployed' AND ${openIssueCount} > 0`,
       updatedAt: new Date(),
     })
     .where(eq(pets.repoId, repoId));
