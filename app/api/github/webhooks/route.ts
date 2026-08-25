@@ -25,6 +25,23 @@ async function fetchOpenIssueCount(installationId: number, owner: string, repo: 
   return data.open_issues_count;
 }
 
+// Isolates one repo's processing so a failed lookup (rate limit, repo
+// deleted mid-flight, etc.) doesn't throw out of the handler and abort the
+// rest of a multi-repo install batch — GitHub's own retry would just hit
+// the same failure again for that repo anyway.
+async function addRepoWithIssueCount(
+  installationId: number,
+  repo: { id: number; name: string; full_name: string; private: boolean },
+) {
+  const githubRepo = toGithubRepo(repo);
+  try {
+    const openIssueCount = await fetchOpenIssueCount(installationId, githubRepo.owner, githubRepo.name);
+    await upsertRepo(installationId, githubRepo, openIssueCount);
+  } catch (err) {
+    console.error(`Failed to add repo ${githubRepo.fullName} for installation ${installationId}`, err);
+  }
+}
+
 let webhooksInstance: Webhooks | null = null;
 
 // Built lazily so importing this route (e.g. Next.js collecting route data at
@@ -49,26 +66,17 @@ function getWebhooks(): Webhooks {
       accountType: "type" in account ? account.type : "Organization",
     });
 
+    // One repo's lookup failing (rate limit, repo gone, etc.) shouldn't
+    // abort the rest of a multi-repo install batch — isolate each repo so
+    // the others still get their pet created.
     for (const repo of payload.repositories ?? []) {
-      const githubRepo = toGithubRepo(repo as never);
-      const openIssueCount = await fetchOpenIssueCount(
-        payload.installation.id,
-        githubRepo.owner,
-        githubRepo.name,
-      );
-      await upsertRepo(payload.installation.id, githubRepo, openIssueCount);
+      await addRepoWithIssueCount(payload.installation.id, repo);
     }
   });
 
   webhooks.on("installation_repositories.added", async ({ payload }) => {
     for (const repo of payload.repositories_added) {
-      const githubRepo = toGithubRepo(repo as never);
-      const openIssueCount = await fetchOpenIssueCount(
-        payload.installation.id,
-        githubRepo.owner,
-        githubRepo.name,
-      );
-      await upsertRepo(payload.installation.id, githubRepo, openIssueCount);
+      await addRepoWithIssueCount(payload.installation.id, repo);
     }
   });
 
