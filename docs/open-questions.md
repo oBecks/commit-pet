@@ -1,0 +1,14 @@
+# Open questions
+
+Things the domain model depends on but that haven't been decided yet. Resolve each with its own ADR when it's tackled — don't let implementation quietly decide these.
+
+- **Data store.** Postgres vs SQLite/Turso vs something else, for Pet/Repo/Installation state. Deferred pending the API surface being nailed down first (see [ADR-009](adr/009-public-multi-tenant.md)).
+- **Health decay/recovery curve.** How much does Health drop per day of inactivity in the Development phase? How much does a commit restore it? Diminishing returns for multiple commits/day? ([ADR-003](adr/003-pet-lifecycle-phases.md))
+- **MCP → repo resolution.** When an agent calls an MCP tool to mark a repo deployed or query its pet, how does the server know *which* repo/installation it's authorized to act on? Needs its own auth design, not just "reuse the GitHub App token." ([ADR-004](adr/004-deployment-signal.md), [ADR-007](adr/007-mcp-scope.md))
+- **Reverse phase transition.** Can a Deployed pet ever go back to Development (e.g. a major rewrite, or a repo un-releasing)? Not designed. ([ADR-003](adr/003-pet-lifecycle-phases.md))
+- **Private repo badges.** The Badge/Widget is public and unauthenticated by design ([ADR-006](adr/006-presentation-surfaces.md)) — decide whether badges are disabled for private repos, or require a signed/opaque URL, before shipping.
+- **Pet visual identity.** Species, art style, what "sad/healthy/sick" actually look like. Pure product/design decision, untouched so far.
+- **Org access control.** For an org-level GitHub App installation, which org members can view/manage the Dashboard for that installation's pets? ([ADR-008](adr/008-github-app-auth.md))
+- **Uninstall/data retention.** What happens to a Pet's history when the GitHub App is uninstalled from a repo, or the repo is deleted/made private?
+- **Failing CI as a second sickness/health signal.** Explicitly deferred, not ruled out. ([ADR-005](adr/005-sickness-signal.md), [ADR-004](adr/004-deployment-signal.md))
+- **Open PRs counted as "open issues."** GitHub's `open_issues_count` field (used by the webhook receiver, `app/api/github/webhooks/route.ts`) counts open pull requests too, since PRs are issues under GitHub's data model. So a repo with only open PRs and zero actual issues will still show its pet as Sick under [ADR-005](adr/005-sickness-signal.md). Not yet decided whether to correct for this (would require an extra API call to subtract open PR count).
