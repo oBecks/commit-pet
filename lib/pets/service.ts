@@ -72,9 +72,15 @@ export async function recordCommit(repoId: number) {
 // Release published (or an explicit MCP deploy call): enter the deployed
 // phase. See docs/adr/004-deployment-signal.md.
 export async function markDeployed(repoId: number) {
+  const pet = await getPetByRepoId(repoId);
+  if (!pet) return;
+
+  // Recompute sick from the issue count already on the row — otherwise a
+  // repo that already had open issues before deploying would enter the
+  // deployed phase with sick still false.
   await db
     .update(pets)
-    .set({ phase: "deployed", updatedAt: new Date() })
+    .set({ phase: "deployed", sick: pet.openIssueCount > 0, updatedAt: new Date() })
     .where(eq(pets.repoId, repoId));
 }
 
