@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Webhooks } from "@octokit/webhooks";
+import { getInstallationOctokit } from "@/lib/github/app-auth";
 import {
   markDeployed,
   recordCommit,
@@ -12,6 +13,33 @@ import {
 function toGithubRepo(repo: { id: number; name: string; full_name: string; private: boolean }) {
   const [owner] = repo.full_name.split("/");
   return { id: repo.id, name: repo.name, owner, fullName: repo.full_name, isPrivate: repo.private };
+}
+
+// The `repositories`/`repositories_added` payloads on installation events
+// are minimal (no open_issues_count), so newly-installed repos need an
+// explicit API call to seed their pet with the real current count —
+// otherwise a repo installed with pre-existing open issues would report
+// healthy until its next issue webhook. See docs/open-questions.md.
+async function fetchOpenIssueCount(installationId: number, owner: string, repo: string) {
+  const { data } = await getInstallationOctokit(installationId).rest.repos.get({ owner, repo });
+  return data.open_issues_count;
+}
+
+// Isolates one repo's processing so a failed lookup (rate limit, repo
+// deleted mid-flight, etc.) doesn't throw out of the handler and abort the
+// rest of a multi-repo install batch — GitHub's own retry would just hit
+// the same failure again for that repo anyway.
+async function addRepoWithIssueCount(
+  installationId: number,
+  repo: { id: number; name: string; full_name: string; private: boolean },
+) {
+  const githubRepo = toGithubRepo(repo);
+  try {
+    const openIssueCount = await fetchOpenIssueCount(installationId, githubRepo.owner, githubRepo.name);
+    await upsertRepo(installationId, githubRepo, openIssueCount);
+  } catch (err) {
+    console.error(`Failed to add repo ${githubRepo.fullName} for installation ${installationId}`, err);
+  }
 }
 
 let webhooksInstance: Webhooks | null = null;
@@ -38,14 +66,17 @@ function getWebhooks(): Webhooks {
       accountType: "type" in account ? account.type : "Organization",
     });
 
+    // One repo's lookup failing (rate limit, repo gone, etc.) shouldn't
+    // abort the rest of a multi-repo install batch — isolate each repo so
+    // the others still get their pet created.
     for (const repo of payload.repositories ?? []) {
-      await upsertRepo(payload.installation.id, toGithubRepo(repo as never));
+      await addRepoWithIssueCount(payload.installation.id, repo);
     }
   });
 
   webhooks.on("installation_repositories.added", async ({ payload }) => {
     for (const repo of payload.repositories_added) {
-      await upsertRepo(payload.installation.id, toGithubRepo(repo as never));
+      await addRepoWithIssueCount(payload.installation.id, repo);
     }
   });
 
