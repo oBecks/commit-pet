@@ -29,6 +29,23 @@ Every repo with commit-pet installed gets its own pet, tied to that repo's activ
 
 The badge above is a live, embeddable SVG (`/api/badge/[repoId]`) — same backend, same pet state, just a different view than the eventual dashboard.
 
+## Workflow
+
+```text
+push → webhook → recordCommit() → Postgres (xp, health)
+                                        │
+        GET /api/badge/[repoId] ───────┘
+                │
+        currentHealth() → renderPetSvg() → SVG
+```
+
+1. **Push** — you push a commit to a repo with the GitHub App installed.
+2. **Webhook** — GitHub POSTs a signed `push` event to `/api/github/webhooks`.
+3. **Write** — the handler verifies the signature and calls `recordCommit()`, which bumps `xp` and `health` in Postgres.
+4. **Render** — on the next request to `/api/badge/[repoId]`, the route reads the current row, applies lazy health decay via `currentHealth()`, and passes the result to `renderPetSvg()` to generate the SVG.
+
+No cron job, no cached image — pet state is only ever written by a webhook or an MCP call (see "How it works" above), and every badge request renders straight from whatever's in the database at that moment.
+
 See [docs/glossary.md](docs/glossary.md) for the full vocabulary, and [docs/adr/](docs/adr/) for the reasoning behind each mechanic.
 
 
