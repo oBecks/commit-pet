@@ -1,4 +1,5 @@
 import type { SamplePet } from "@/lib/pets/sample-data";
+import { ExternalLink } from "./ExternalLink";
 
 export function OpenIssuesCard({ pet }: { pet: SamplePet }) {
   return (
@@ -18,26 +19,14 @@ export function OpenIssuesCard({ pet }: { pet: SamplePet }) {
             open issue
             {pet.openIssueCount === 1 ? "" : "s"} on this repo.
           </p>
-          <a
+          <ExternalLink
             href={`https://github.com/${pet.fullName}/issues`}
-            className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-dash-accent hover:text-[#C2560B]"
+            className="w-fit text-dash-accent hover:text-[#C2560B]"
           >
             View on GitHub
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <path d="M7 17L17 7" />
-              <path d="M9 7h8v8" />
-            </svg>
-          </a>
+          </ExternalLink>
           <p className="text-xs text-dash-muted">
-            Health recovers as these close — no action needed here.
+            Sick clears once these close — no action needed here.
           </p>
         </>
       )}

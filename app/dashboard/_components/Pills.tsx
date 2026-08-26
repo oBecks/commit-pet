@@ -14,7 +14,9 @@ const PHASE_LABEL: Record<Phase, string> = {
   deployed: "Deployed",
 };
 
-const MOOD: Record<
+// Exported so other cards that need mood-tinted colors (HealthCard, PetCard's
+// XP bar) read from one place instead of re-declaring the same class names.
+export const MOOD: Record<
   Mood,
   { label: string; bg: string; text: string; dot: string }
 > = {

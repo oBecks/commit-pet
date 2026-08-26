@@ -12,6 +12,7 @@ export type Phase = "development" | "deployed";
 export type SamplePet = {
   repoId: string;
   fullName: string;
+  isPrivate: boolean;
   phase: Phase;
   xp: number;
   health: number;
@@ -26,6 +27,7 @@ export const SAMPLE_PETS: SamplePet[] = [
   {
     repoId: "848213001",
     fullName: "acme/api-gateway",
+    isPrivate: false,
     phase: "development",
     xp: 420,
     health: 95,
@@ -38,6 +40,7 @@ export const SAMPLE_PETS: SamplePet[] = [
   {
     repoId: "848213002",
     fullName: "acme/mobile-app",
+    isPrivate: false,
     phase: "development",
     xp: 210,
     health: 32,
@@ -50,6 +53,7 @@ export const SAMPLE_PETS: SamplePet[] = [
   {
     repoId: "848213093",
     fullName: "acme/billing-service",
+    isPrivate: true,
     phase: "deployed",
     xp: 90,
     health: 34,
@@ -62,6 +66,7 @@ export const SAMPLE_PETS: SamplePet[] = [
   {
     repoId: "848213004",
     fullName: "acme/design-system",
+    isPrivate: false,
     phase: "development",
     xp: 12,
     health: 100,
@@ -74,6 +79,7 @@ export const SAMPLE_PETS: SamplePet[] = [
   {
     repoId: "848213005",
     fullName: "acme/docs-site",
+    isPrivate: false,
     phase: "deployed",
     xp: 620,
     health: 100,
@@ -86,6 +92,7 @@ export const SAMPLE_PETS: SamplePet[] = [
   {
     repoId: "848213006",
     fullName: "acme/worker-queue",
+    isPrivate: false,
     phase: "development",
     xp: 250,
     health: 92,

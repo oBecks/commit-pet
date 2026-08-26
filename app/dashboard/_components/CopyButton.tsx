@@ -2,17 +2,25 @@
 
 import { useState } from "react";
 
+type Status = "idle" | "copied" | "error";
+
 export function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
+
+  async function handleClick() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus("copied");
+    } catch {
+      setStatus("error");
+    }
+    setTimeout(() => setStatus("idle"), 1500);
+  }
 
   return (
     <button
       type="button"
-      onClick={async () => {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }}
+      onClick={handleClick}
       className="flex items-center justify-center gap-1.5 rounded-lg border border-dash-border p-2 text-sm font-semibold text-dash-heading hover:bg-dash-neutral-pill"
     >
       <svg
@@ -27,7 +35,11 @@ export function CopyButton({ text }: { text: string }) {
         <rect x="9" y="9" width="12" height="12" rx="2" />
         <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
       </svg>
-      {copied ? "Copied!" : "Copy markdown"}
+      {status === "copied"
+        ? "Copied!"
+        : status === "error"
+          ? "Couldn't copy"
+          : "Copy markdown"}
     </button>
   );
 }

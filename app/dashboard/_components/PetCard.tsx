@@ -4,12 +4,15 @@ import { moodFor } from "@/lib/pets/mood";
 import type { SamplePet } from "@/lib/pets/sample-data";
 import { PetArt } from "./PetArt";
 import { Bar } from "./Bar";
-import { MoodPill, PhasePill, StagePill } from "./Pills";
+import { MOOD, MoodPill, PhasePill, StagePill } from "./Pills";
 
-const MOOD_BAR_FILL = {
+// This is the XP growth bar, not the health bar, so "healthy" deliberately
+// stays the brand accent instead of MOOD.healthy.dot — only tired/sick tint
+// it, reusing the same dot colors HealthCard/MoodPill use elsewhere.
+const XP_BAR_FILL = {
   healthy: "bg-dash-accent",
-  tired: "bg-tired-dot",
-  sick: "bg-sick-dot",
+  tired: MOOD.tired.dot,
+  sick: MOOD.sick.dot,
 } as const;
 
 export function PetCard({ pet }: { pet: SamplePet }) {
@@ -53,7 +56,7 @@ export function PetCard({ pet }: { pet: SamplePet }) {
       </div>
 
       <div>
-        <Bar progress={progress} fillClassName={MOOD_BAR_FILL[mood]} />
+        <Bar progress={progress} fillClassName={XP_BAR_FILL[mood]} />
         <div className="mt-1.5 text-center text-xs text-dash-muted">
           {pet.phase === "deployed"
             ? `Deployed ${pet.deployedRelative}`
