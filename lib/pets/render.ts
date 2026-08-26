@@ -132,10 +132,22 @@ const CONTENT: Record<Stage, string> = {
 };
 
 // Clip paths for the bushy tail tips (hatchling/juvenile/adult only) — see
-// the tail outline paths above, which double as their own clip shapes.
-const TAIL_CLIPS = `<clipPath id="tailclipHatch"><path d="M 18 56 C 38 62, 42 44, 34 30 C 30 40, 26 52, 17 50 Z"/></clipPath>
-<clipPath id="tailclipJuv"><path d="M 22 52 C 46 58, 50 34, 40 18 C 34 28, 28 42, 19 44 Z"/></clipPath>
-<clipPath id="tailclipAdult"><path d="M 24 58 C 48 64, 46 -4, 32 -20 C 18 -36, 10 10, 16 42 Z"/></clipPath>`;
+// the tail outline paths above, which double as their own clip shapes. Keyed
+// per stage (rather than one flat string) so petArtwork() below can scope
+// just the one clip a given stage needs to a unique id — see its comment.
+const TAIL_CLIP_ID: Partial<Record<Stage, string>> = {
+  hatchling: "tailclipHatch",
+  juvenile: "tailclipJuv",
+  adult: "tailclipAdult",
+};
+
+const TAIL_CLIP_SOURCE: Partial<Record<Stage, string>> = {
+  hatchling: `<clipPath id="tailclipHatch"><path d="M 18 56 C 38 62, 42 44, 34 30 C 30 40, 26 52, 17 50 Z"/></clipPath>`,
+  juvenile: `<clipPath id="tailclipJuv"><path d="M 22 52 C 46 58, 50 34, 40 18 C 34 28, 28 42, 19 44 Z"/></clipPath>`,
+  adult: `<clipPath id="tailclipAdult"><path d="M 24 58 C 48 64, 46 -4, 32 -20 C 18 -36, 10 10, 16 42 Z"/></clipPath>`,
+};
+
+const TAIL_CLIPS = Object.values(TAIL_CLIP_SOURCE).join("");
 
 // Every hex fill/stroke used across CONTENT above (consistent across every
 // stage). Typing PALETTES against this union, rather than a bare
@@ -232,6 +244,31 @@ function moodOverlay(stage: Stage, mood: Mood): string {
   // then draw a queasy wavy mouth on top.
   return `<ellipse cx="0" cy="${face.mouthY - 1}" rx="7" ry="4" fill="${furColor}"/>
 <path d="M -6 ${face.mouthY} Q -3 ${face.mouthY + 4} 0 ${face.mouthY} Q 3 ${face.mouthY - 4} 6 ${face.mouthY}" stroke="#1F2937" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+}
+
+// Reusable across any surface that needs just the creature (Dashboard cards),
+// as opposed to the full badge composition below (card frame + xp bar +
+// label). instanceId scopes the stage's tail clip-path id so multiple pets
+// rendered as sibling inline <svg>s on one page don't collide on a shared
+// literal id (SVG ids aren't scoped per <svg> in the DOM) — renderPetSvg
+// doesn't need this since it only ever renders one pet per response.
+export function petArtwork(
+  stage: Stage,
+  mood: Mood,
+  instanceId: string,
+): { viewBox: string; defs: string; body: string } {
+  const body = recolor(CONTENT[stage], mood) + moodOverlay(stage, mood);
+  const clipId = TAIL_CLIP_ID[stage];
+  const clipSource = TAIL_CLIP_SOURCE[stage];
+  if (!clipId || !clipSource) {
+    return { viewBox: VIEWBOX[stage], defs: "", body };
+  }
+  const scopedId = `${clipId}-${instanceId}`;
+  return {
+    viewBox: VIEWBOX[stage],
+    defs: clipSource.replace(clipId, scopedId),
+    body: body.replaceAll(clipId, scopedId),
+  };
 }
 
 // Extra viewBox space reserved below the art for the xp progress bar + label.
