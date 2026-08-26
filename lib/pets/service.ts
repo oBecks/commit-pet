@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { installations, repos, pets } from "@/lib/db/schema";
 import { boostedHealth } from "./health";
-import { boostedXp } from "./growth";
+import { XP_PER_COMMIT, MAX_XP } from "./growth";
 
 type GithubRepo = {
   id: number;
@@ -72,7 +72,10 @@ export async function recordCommit(repoId: number) {
     .update(pets)
     .set({
       health: boostedHealth(pet.health, pet.lastCommitAt),
-      xp: boostedXp(pet.xp),
+      // Computed from the column itself (not the `pet` read above) so two
+      // concurrent push deliveries for the same repo can't race and lose an
+      // increment — same reasoning as the sick/openIssueCount updates below.
+      xp: sql`LEAST(${pets.xp} + ${XP_PER_COMMIT}, ${MAX_XP})`,
       lastCommitAt: new Date(),
       updatedAt: new Date(),
     })
@@ -121,6 +124,14 @@ export async function setOpenIssueCount(repoId: number, openIssueCount: number) 
   if (updated.length === 0) {
     console.warn(`setOpenIssueCount: no pet for repo ${repoId}, issue event dropped`);
   }
+}
+
+// Repository visibility changed (GitHub's `repository.privatized`/
+// `publicized` events) — keeps the badge endpoint's isPrivate check
+// (docs/adr/011-private-repo-badges-blocked.md) from serving a stale
+// decision after a repo's visibility changes post-install.
+export async function setRepoPrivate(repoId: number, isPrivate: boolean) {
+  await db.update(repos).set({ isPrivate }).where(eq(repos.id, repoId));
 }
 
 export async function getRepoById(repoId: number) {

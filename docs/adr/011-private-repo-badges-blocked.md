@@ -15,3 +15,4 @@ If the repo behind a `repoId` is private, the badge endpoint returns the same `4
 
 ## Consequences
 - A private repo simply has no working badge today. If signed/opaque badge URLs are wanted later, this ADR's blanket-404 behavior is what changes — the route already isolates the private-repo check in one place (`app/api/badge/[repoId]/route.ts`).
+- This check is only as fresh as `repos.isPrivate`. A `repository.privatized`/`publicized` webhook handler (`app/api/github/webhooks/route.ts`) keeps it in sync when a repo's visibility changes after install — this requires the GitHub App to be subscribed to the `repository` event (see `docs/github-app-setup.md`), a one-time manual step on an already-created App.
