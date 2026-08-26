@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPetByRepoId, getRepoById } from "@/lib/pets/service";
 import { renderPetSvg } from "@/lib/pets/render";
+import { currentHealth } from "@/lib/pets/health";
 
 // Public, unauthenticated by design (docs/adr/006-presentation-surfaces.md).
 // A private repo's badge must not confirm the repo's existence or state, so
@@ -23,7 +24,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ repoId:
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  const svg = renderPetSvg(pet.xp);
+  const health = currentHealth(pet.health, pet.lastCommitAt);
+  const svg = renderPetSvg(pet.xp, health, pet.sick);
   return new NextResponse(svg, {
     headers: {
       "Content-Type": "image/svg+xml",
