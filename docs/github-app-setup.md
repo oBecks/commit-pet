@@ -38,5 +38,6 @@ Only request these three for now — anything the Dashboard/Badge/MCP work later
 - Generate a **private key** (downloads a `.pem`) — this is `GITHUB_APP_PRIVATE_KEY`. When putting it in a single-line env var, keep it as one string with literal `\n` for newlines; `lib/github/app-auth.ts` un-escapes that automatically.
 - Note the **App ID** — this is `GITHUB_APP_ID`.
 - Install the App on a test repo (**Install App** in the sidebar) to start generating webhook traffic.
+- Under **Advanced** in the App's settings, click **Make public** — otherwise only the App owner can install it, which blocks anyone else from trying commit-pet on their own repo (see [ADR-009](adr/009-public-multi-tenant.md)).
 
 Fill in `.env.example` → `.env.local` with all three values plus `DATABASE_URL` once you have a Postgres instance (see [ADR-010](adr/010-postgres-drizzle-default.md)).
