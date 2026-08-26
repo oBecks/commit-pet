@@ -16,7 +16,10 @@ export function PetCard({ pet }: { pet: SamplePet }) {
   const { stage, floor, ceiling } = stageProgress(pet.xp);
   const mood = moodFor(pet.health, pet.sick);
   const progress = ceiling === null ? 1 : (pet.xp - floor) / (ceiling - floor);
-  const progressLabel = ceiling === null ? `${pet.xp.toLocaleString()} XP · max stage` : `${pet.xp} / ${ceiling} XP`;
+  const progressLabel =
+    ceiling === null
+      ? `${pet.xp.toLocaleString()} XP · max stage`
+      : `${pet.xp} / ${ceiling} XP`;
 
   return (
     <Link
@@ -38,7 +41,9 @@ export function PetCard({ pet }: { pet: SamplePet }) {
             <rect x="3" y="4" width="18" height="16" rx="2" />
             <path d="M3 9h18" />
           </svg>
-          <span className="truncate text-sm font-semibold text-dash-heading">{pet.fullName}</span>
+          <span className="truncate text-sm font-semibold text-dash-heading">
+            {pet.fullName}
+          </span>
         </div>
         <PhasePill phase={pet.phase} />
       </div>
@@ -50,7 +55,9 @@ export function PetCard({ pet }: { pet: SamplePet }) {
       <div>
         <Bar progress={progress} fillClassName={MOOD_BAR_FILL[mood]} />
         <div className="mt-1.5 text-center text-xs text-dash-muted">
-          {pet.phase === "deployed" ? `Deployed ${pet.deployedRelative}` : progressLabel}
+          {pet.phase === "deployed"
+            ? `Deployed ${pet.deployedRelative}`
+            : progressLabel}
         </div>
       </div>
 

@@ -17,7 +17,8 @@ const MOOD_BAR_FILL: Record<Mood, string> = {
 
 const MOOD_BLURB: Record<Mood, string> = {
   healthy: "Steady commits (or a clean deploy) are keeping health topped up.",
-  tired: "Health drops when the repo goes quiet — a fresh commit brings it back up.",
+  tired:
+    "Health drops when the repo goes quiet — a fresh commit brings it back up.",
   sick: "Health decays while issues stay open, and recovers as they're resolved.",
 };
 
@@ -28,7 +29,9 @@ export function HealthCard({ pet }: { pet: SamplePet }) {
     <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-card p-6">
       <h2 className="text-[15px] font-bold text-dash-heading">Health</h2>
       <div className="flex items-baseline gap-2.5">
-        <span className={`text-[32px] font-bold ${MOOD_TEXT[mood]}`}>{pet.health}%</span>
+        <span className={`text-[32px] font-bold ${MOOD_TEXT[mood]}`}>
+          {pet.health}%
+        </span>
         <MoodPill mood={mood} />
       </div>
       <Bar progress={pet.health / 100} fillClassName={MOOD_BAR_FILL[mood]} />

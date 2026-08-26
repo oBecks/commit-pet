@@ -8,7 +8,9 @@ import { HealthCard } from "../_components/HealthCard";
 import { BadgeCard } from "../_components/BadgeCard";
 import { RepoInfoCard } from "../_components/RepoInfoCard";
 
-export default async function PetDetailPage({ params }: PageProps<"/dashboard/[repoId]">) {
+export default async function PetDetailPage({
+  params,
+}: PageProps<"/dashboard/[repoId]">) {
   const { repoId } = await params;
   const pet = getSamplePet(repoId);
   if (!pet) notFound();
@@ -16,7 +18,10 @@ export default async function PetDetailPage({ params }: PageProps<"/dashboard/[r
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-8 sm:px-12">
       <div className="flex items-center gap-2 text-[13px]">
-        <Link href="/dashboard" className="font-semibold text-dash-accent hover:text-[#C2560B]">
+        <Link
+          href="/dashboard"
+          className="font-semibold text-dash-accent hover:text-[#C2560B]"
+        >
           ← Dashboard
         </Link>
         <span className="text-dash-muted">/</span>
@@ -26,7 +31,11 @@ export default async function PetDetailPage({ params }: PageProps<"/dashboard/[r
       <div className="flex flex-col items-start gap-6 lg:flex-row">
         <div className="flex min-w-0 flex-1 flex-col gap-6 lg:flex-[2]">
           <Hero pet={pet} />
-          {pet.phase === "development" ? <GrowthCard pet={pet} /> : <OpenIssuesCard pet={pet} />}
+          {pet.phase === "development" ? (
+            <GrowthCard pet={pet} />
+          ) : (
+            <OpenIssuesCard pet={pet} />
+          )}
         </div>
 
         <div className="flex w-full flex-col gap-6 lg:w-auto lg:flex-1">

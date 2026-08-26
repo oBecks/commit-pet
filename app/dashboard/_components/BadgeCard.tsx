@@ -14,7 +14,9 @@ export function BadgeCard({ pet }: { pet: SamplePet }) {
         dangerouslySetInnerHTML={{ __html: svg }}
       />
       <div className="overflow-x-auto rounded-lg bg-[#2B2115] p-3">
-        <code className="font-mono text-[11.5px] whitespace-pre text-[#F5EFE4]">{snippet}</code>
+        <code className="font-mono text-[11.5px] whitespace-pre text-[#F5EFE4]">
+          {snippet}
+        </code>
       </div>
       <CopyButton text={snippet} />
     </div>

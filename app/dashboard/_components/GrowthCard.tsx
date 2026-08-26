@@ -15,7 +15,9 @@ export function GrowthCard({ pet }: { pet: SamplePet }) {
       <h2 className="text-[15px] font-bold text-dash-heading">Growth</h2>
       <Bar progress={progress} />
       <span className="text-xs text-dash-muted">{label}</span>
-      <p className="text-xs text-dash-muted">Last commit {pet.lastCommitRelative}</p>
+      <p className="text-xs text-dash-muted">
+        Last commit {pet.lastCommitRelative}
+      </p>
     </div>
   );
 }

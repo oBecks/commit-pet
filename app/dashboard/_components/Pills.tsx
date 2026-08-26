@@ -14,7 +14,10 @@ const PHASE_LABEL: Record<Phase, string> = {
   deployed: "Deployed",
 };
 
-const MOOD: Record<Mood, { label: string; bg: string; text: string; dot: string }> = {
+const MOOD: Record<
+  Mood,
+  { label: string; bg: string; text: string; dot: string }
+> = {
   healthy: {
     label: "Healthy",
     bg: "bg-healthy-bg",

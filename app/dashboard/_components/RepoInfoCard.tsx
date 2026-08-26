@@ -6,7 +6,9 @@ export function RepoInfoCard({ pet }: { pet: SamplePet }) {
       <h2 className="text-[15px] font-bold text-dash-heading">Repo</h2>
       <div className="flex items-center justify-between text-[13px]">
         <span className="text-dash-muted">Installed</span>
-        <span className="font-semibold text-dash-heading">{pet.installedOn}</span>
+        <span className="font-semibold text-dash-heading">
+          {pet.installedOn}
+        </span>
       </div>
       <div className="flex items-center justify-between text-[13px]">
         <span className="text-dash-muted">Repository</span>
