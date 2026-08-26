@@ -31,17 +31,4 @@ The badge above is a live, embeddable SVG (`/api/badge/[repoId]`) — same backe
 
 See [docs/glossary.md](docs/glossary.md) for the full vocabulary, and [docs/adr/](docs/adr/) for the reasoning behind each mechanic.
 
-## Status
-
-This is a personal project, still early. The GitHub App is public and installable by anyone, but there's no dashboard or self-serve onboarding UI yet — installing and grabbing your repo ID is a manual, GitHub-side process (see above).
-
-## Getting Started
-
-```bash
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view it.
-
-Setting up your own instance (GitHub App, database, env vars) is documented in [docs/github-app-setup.md](docs/github-app-setup.md).
 
