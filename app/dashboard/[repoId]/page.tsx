@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSamplePet } from "@/lib/pets/sample-data";
+import { getAccessibleInstallationIds } from "@/lib/github/user-auth";
+import { getDashboardPet } from "@/lib/pets/dashboard-data";
 import { Hero } from "../_components/Hero";
 import { GrowthCard } from "../_components/GrowthCard";
 import { OpenIssuesCard } from "../_components/OpenIssuesCard";
@@ -12,7 +13,17 @@ export default async function PetDetailPage({
   params,
 }: PageProps<"/dashboard/[repoId]">) {
   const { repoId } = await params;
-  const pet = getSamplePet(repoId);
+  const repoIdNum = Number(repoId);
+  if (!Number.isInteger(repoIdNum)) notFound();
+
+  const installationIds = await getAccessibleInstallationIds();
+  if (installationIds === null) notFound();
+
+  // Scoped to the signed-in user's own installations — see
+  // lib/pets/dashboard-data.ts. Returns null (not found) for a repoId that
+  // exists but belongs to someone else's installation, same as one that
+  // doesn't exist at all.
+  const pet = await getDashboardPet(repoIdNum, installationIds);
   if (!pet) notFound();
 
   return (

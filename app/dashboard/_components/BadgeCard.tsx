@@ -1,8 +1,8 @@
 import { renderPetSvg } from "@/lib/pets/render";
-import type { SamplePet } from "@/lib/pets/sample-data";
+import type { DashboardPet } from "@/lib/pets/dashboard-data";
 import { CopyButton } from "./CopyButton";
 
-export function BadgeCard({ pet }: { pet: SamplePet }) {
+export function BadgeCard({ pet }: { pet: DashboardPet }) {
   // The public badge endpoint 404s private repos by design (ADR-011) — no
   // point showing a snippet that won't render for anyone who pastes it.
   if (pet.isPrivate) {

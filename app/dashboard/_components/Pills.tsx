@@ -1,6 +1,6 @@
 import type { Stage } from "@/lib/pets/growth";
 import type { Mood } from "@/lib/pets/mood";
-import type { Phase } from "@/lib/pets/sample-data";
+import type { Phase } from "@/lib/pets/dashboard-data";
 
 const STAGE_LABEL: Record<Stage, string> = {
   egg: "Egg",

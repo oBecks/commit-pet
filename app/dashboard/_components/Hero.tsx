@@ -1,16 +1,19 @@
 import { stageForXp } from "@/lib/pets/growth";
 import { moodFor } from "@/lib/pets/mood";
-import type { SamplePet } from "@/lib/pets/sample-data";
+import type { DashboardPet } from "@/lib/pets/dashboard-data";
 import { PetArt } from "./PetArt";
 import { MoodPill, PhasePill, StagePill } from "./Pills";
 
-const PHASE_BLURB: Record<SamplePet["phase"], (pet: SamplePet) => string> = {
+const PHASE_BLURB: Record<
+  DashboardPet["phase"],
+  (pet: DashboardPet) => string
+> = {
   development: () => "In development — every commit feeds this pet.",
   deployed: (pet) =>
     `Deployed ${pet.deployedRelative} — stopped needing commits, now watches for open issues instead.`,
 };
 
-export function Hero({ pet }: { pet: SamplePet }) {
+export function Hero({ pet }: { pet: DashboardPet }) {
   const stage = stageForXp(pet.xp);
   const mood = moodFor(pet.health, pet.sick);
 

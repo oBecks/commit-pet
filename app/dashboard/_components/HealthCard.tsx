@@ -1,5 +1,5 @@
 import { moodFor, type Mood } from "@/lib/pets/mood";
-import type { SamplePet } from "@/lib/pets/sample-data";
+import type { DashboardPet } from "@/lib/pets/dashboard-data";
 import { Bar } from "./Bar";
 import { MOOD, MoodPill } from "./Pills";
 
@@ -14,7 +14,7 @@ const MOOD_BLURB: Record<Mood, string> = {
   sick: "Sick tracks open issues, separately from health — which keeps decaying based on time since the last commit.",
 };
 
-export function HealthCard({ pet }: { pet: SamplePet }) {
+export function HealthCard({ pet }: { pet: DashboardPet }) {
   const mood = moodFor(pet.health, pet.sick);
 
   return (
