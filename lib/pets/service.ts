@@ -68,18 +68,10 @@ export async function recordCommit(repoId: number) {
   const pet = await getPetByRepoId(repoId);
   if (!pet || pet.phase !== "development") return;
 
-  // Re-checks phase in the WHERE clause, not just the read above, so a
-  // concurrent markDeployed() landing between that read and this write can't
-  // have a stale development-phase commit still bump health/XP after the
-  // pet has already left development.
-  //
-  // health is still computed from the `pet` read above rather than a
-  // database-side expression, unlike xp — its decay math depends on
-  // lastCommitAt in a way that isn't safely reducible to a single SQL
-  // expression while the curve itself is still an open product question
-  // (docs/open-questions.md); porting it now would harden a formula that's
-  // explicitly not final. xp's increment is trivial (flat, clamped) so it
-  // gets the atomic treatment; health's doesn't yet.
+  // Re-checks phase in the WHERE clause (not just the read above) so a
+  // concurrent markDeployed() can't leave a stale commit landing after the
+  // pet already left development. health's own concurrency gap is tracked
+  // in docs/open-questions.md rather than fixed here.
   const updated = await db
     .update(pets)
     .set({
