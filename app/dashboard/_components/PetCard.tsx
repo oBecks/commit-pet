@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { stageProgress } from "@/lib/pets/growth";
 import { moodFor } from "@/lib/pets/mood";
-import type { SamplePet } from "@/lib/pets/sample-data";
+import type { DashboardPet } from "@/lib/pets/dashboard-data";
 import { PetArt } from "./PetArt";
 import { Bar } from "./Bar";
 import { MOOD, MoodPill, PhasePill, StagePill } from "./Pills";
@@ -15,7 +15,7 @@ const XP_BAR_FILL = {
   sick: MOOD.sick.dot,
 } as const;
 
-export function PetCard({ pet }: { pet: SamplePet }) {
+export function PetCard({ pet }: { pet: DashboardPet }) {
   const { stage, floor, ceiling } = stageProgress(pet.xp);
   const mood = moodFor(pet.health, pet.sick);
   const progress = ceiling === null ? 1 : (pet.xp - floor) / (ceiling - floor);
@@ -71,7 +71,11 @@ export function PetCard({ pet }: { pet: SamplePet }) {
 
       <div className="text-xs text-dash-muted">
         {pet.phase === "development" ? (
-          `Last commit ${pet.lastCommitRelative}`
+          pet.lastCommitRelative ? (
+            `Last commit ${pet.lastCommitRelative}`
+          ) : (
+            "No commits yet"
+          )
         ) : pet.openIssueCount > 0 ? (
           <span className="inline-flex items-center gap-1.5 font-semibold text-sick-text">
             <svg

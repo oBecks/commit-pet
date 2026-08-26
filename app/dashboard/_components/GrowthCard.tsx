@@ -1,8 +1,8 @@
 import { stageProgress } from "@/lib/pets/growth";
-import type { SamplePet } from "@/lib/pets/sample-data";
+import type { DashboardPet } from "@/lib/pets/dashboard-data";
 import { Bar } from "./Bar";
 
-export function GrowthCard({ pet }: { pet: SamplePet }) {
+export function GrowthCard({ pet }: { pet: DashboardPet }) {
   const { floor, ceiling } = stageProgress(pet.xp);
   const progress = ceiling === null ? 1 : (pet.xp - floor) / (ceiling - floor);
   const label =
@@ -16,7 +16,9 @@ export function GrowthCard({ pet }: { pet: SamplePet }) {
       <Bar progress={progress} />
       <span className="text-xs text-dash-muted">{label}</span>
       <p className="text-xs text-dash-muted">
-        Last commit {pet.lastCommitRelative}
+        {pet.lastCommitRelative
+          ? `Last commit ${pet.lastCommitRelative}`
+          : "No commits yet"}
       </p>
     </div>
   );

@@ -1,7 +1,7 @@
-import type { SamplePet } from "@/lib/pets/sample-data";
+import type { DashboardPet } from "@/lib/pets/dashboard-data";
 import { ExternalLink } from "./ExternalLink";
 
-export function OpenIssuesCard({ pet }: { pet: SamplePet }) {
+export function OpenIssuesCard({ pet }: { pet: DashboardPet }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-card p-6">
       <h2 className="text-[15px] font-bold text-dash-heading">Open issues</h2>
