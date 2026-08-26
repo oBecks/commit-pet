@@ -1,9 +1,16 @@
 import { stageProgress, type Stage } from "./growth";
+import { moodFor, type Mood } from "./mood";
 
 // Hand-authored fox illustration, one variant per growth stage. Colors and
 // paths are fixed art assets, not derived from pet data — see docs/adr/006
 // (Badge/Widget) for why this is a plain unauthenticated SVG rather than a
-// generated chart. Mood variants (health/sick) are future work.
+// generated chart.
+//
+// Mood (healthy/tired/sick, see mood.ts) reuses this same per-stage art
+// rather than adding a whole new set of hand-authored variants: a palette
+// swap recolors the fixed hex fills/strokes below, and a small overlay layers
+// droopy eyelids (tired) or a queasy mouth (sick) on top, positioned from the
+// FACE anchors that mirror each stage's actual eye/mouth coordinates.
 
 const EGG = `<ellipse cx="0" cy="70" rx="28" ry="7" fill="#000000" fill-opacity="0.08"/>
 <ellipse cx="0" cy="10" rx="38" ry="52" fill="#FFF3E0" stroke="#E8B778" stroke-width="2"/>
@@ -130,16 +137,86 @@ const TAIL_CLIPS = `<clipPath id="tailclipHatch"><path d="M 18 56 C 38 62, 42 44
 <clipPath id="tailclipJuv"><path d="M 22 52 C 46 58, 50 34, 40 18 C 34 28, 28 42, 19 44 Z"/></clipPath>
 <clipPath id="tailclipAdult"><path d="M 24 58 C 48 64, 46 -4, 32 -20 C 18 -36, 10 10, 16 42 Z"/></clipPath>`;
 
+// Global find/replace of the "healthy" hex values used across CONTENT above
+// (consistent across every stage) into a mood-tinted equivalent. Healthy
+// needs no entry — renderPetSvg skips recoloring for it entirely.
+const PALETTES: Record<Exclude<Mood, "healthy">, Record<string, string>> = {
+  tired: {
+    "#FB923C": "#C99B72",
+    "#F97316": "#B97A46",
+    "#EA711C": "#B97A46",
+    "#C2560B": "#6B5645",
+    "#FFD9B8": "#E8D6C2",
+    "#FFF3E0": "#F5EFE4",
+    "#FCA5A5": "#D8C9B8",
+    "#E8B778": "#C7B79A",
+    "#C98A3E": "#8C7A5E",
+  },
+  sick: {
+    "#FB923C": "#C4B454",
+    "#F97316": "#AD9B3E",
+    "#EA711C": "#AD9B3E",
+    "#C2560B": "#6B5E2E",
+    "#FFD9B8": "#D9D3A8",
+    "#FFF3E0": "#F0EDD6",
+    "#FCA5A5": "#C6D6A8",
+    "#E8B778": "#B8C77A",
+    "#C98A3E": "#6B5E2E",
+  },
+};
+
+function recolor(svg: string, mood: Mood): string {
+  if (mood === "healthy") return svg;
+  let result = svg;
+  for (const [from, to] of Object.entries(PALETTES[mood])) {
+    result = result.split(from).join(to);
+  }
+  return result;
+}
+
+// Eye/mouth anchor points, hand-measured from each stage's CONTENT above, so
+// the mood overlay lines up with the actual art instead of guessing. Egg has
+// no face, so it only gets the palette recolor.
+const FACE: Record<Exclude<Stage, "egg">, { eyeXs: [number, number]; eyeY: number; eyeR: number; mouthY: number }> = {
+  hatchling: { eyeXs: [-12, 12], eyeY: -8, eyeR: 9, mouthY: 13 },
+  juvenile: { eyeXs: [-11, 11], eyeY: -8, eyeR: 7.5, mouthY: 11 },
+  adult: { eyeXs: [-12, 12], eyeY: -9, eyeR: 9, mouthY: 10 },
+};
+
+// Every stage's main fur fill is the same "#FB923C", so the overlay can
+// blend into the (already recolored) head using one shared lookup.
+const FUR_COLOR: Record<Mood, string> = { healthy: "#FB923C", tired: PALETTES.tired["#FB923C"], sick: PALETTES.sick["#FB923C"] };
+
+function moodOverlay(stage: Stage, mood: Mood): string {
+  if (stage === "egg" || mood === "healthy") return "";
+  const face = FACE[stage];
+  const furColor = FUR_COLOR[mood];
+
+  if (mood === "tired") {
+    // Droopy eyelids: a fur-colored rect over the top ~65% of each eye reads
+    // as half-lidded/sleepy without fully closing the eye.
+    return face.eyeXs
+      .map((x) => `<rect x="${x - face.eyeR}" y="${face.eyeY - face.eyeR}" width="${face.eyeR * 2}" height="${face.eyeR * 1.3}" fill="${furColor}"/>`)
+      .join("");
+  }
+
+  // Sick: mask the stage's neutral/smiling mouth with a fur-colored patch,
+  // then draw a queasy wavy mouth on top.
+  return `<ellipse cx="0" cy="${face.mouthY - 1}" rx="7" ry="4" fill="${furColor}"/>
+<path d="M -6 ${face.mouthY} Q -3 ${face.mouthY + 4} 0 ${face.mouthY} Q 3 ${face.mouthY - 4} 6 ${face.mouthY}" stroke="#1F2937" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+}
+
 // Extra viewBox space reserved below the art for the xp progress bar + label.
 const BAR_AREA_HEIGHT = 46;
 const BAR_HEIGHT = 12;
 const BAR_INSET_X = 14;
 const BAR_GAP_FROM_ART = 24;
 
-export function renderPetSvg(xp: number): string {
+export function renderPetSvg(xp: number, health: number, sick: boolean): string {
   const { stage, floor, ceiling } = stageProgress(xp);
   const progress = ceiling === null ? 1 : Math.max(0, Math.min(1, (xp - floor) / (ceiling - floor)));
   const label = ceiling === null ? `${xp} XP (max)` : `${xp} / ${ceiling} XP`;
+  const mood = moodFor(health, sick);
 
   const [x0, y0, w, artHeight] = VIEWBOX[stage].split(" ").map(Number);
   const totalHeight = artHeight + BAR_AREA_HEIGHT;
@@ -149,12 +226,14 @@ export function renderPetSvg(xp: number): string {
 
   const height = 220;
   const width = Math.round((height * w) / totalHeight);
+  const titleMood = mood === "healthy" ? "" : `, ${mood}`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${x0} ${y0} ${w} ${totalHeight}" role="img">
-<title>commit-pet (${stage}, ${xp} xp)</title>
+<title>commit-pet (${stage}, ${xp} xp${titleMood})</title>
 <defs>${TAIL_CLIPS}</defs>
 <rect x="${x0 + 2}" y="${y0 + 2}" width="${w - 4}" height="${totalHeight - 4}" rx="16" fill="#FFFBF5" stroke="#E8D9BE" stroke-width="2"/>
-${CONTENT[stage]}
+${recolor(CONTENT[stage], mood)}
+${moodOverlay(stage, mood)}
 <rect x="${barX}" y="${barY}" width="${barWidth}" height="${BAR_HEIGHT}" rx="6" fill="#F0DEC4"/>
 <rect x="${barX}" y="${barY}" width="${barWidth * progress}" height="${BAR_HEIGHT}" rx="6" fill="#FB923C"/>
 <text x="${x0 + w / 2}" y="${barY - 8}" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#57534E">${label}</text>
