@@ -30,5 +30,3 @@ Every repo with commit-pet installed gets its own pet, tied to that repo's activ
 The badge above is a live, embeddable SVG (`/api/badge/[repoId]`) — same backend, same pet state, just a different view than the eventual dashboard.
 
 See [docs/glossary.md](docs/glossary.md) for the full vocabulary, and [docs/adr/](docs/adr/) for the reasoning behind each mechanic.
-
-

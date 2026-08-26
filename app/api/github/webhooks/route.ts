@@ -11,9 +11,20 @@ import {
   upsertRepo,
 } from "@/lib/pets/service";
 
-function toGithubRepo(repo: { id: number; name: string; full_name: string; private: boolean }) {
+function toGithubRepo(repo: {
+  id: number;
+  name: string;
+  full_name: string;
+  private: boolean;
+}) {
   const [owner] = repo.full_name.split("/");
-  return { id: repo.id, name: repo.name, owner, fullName: repo.full_name, isPrivate: repo.private };
+  return {
+    id: repo.id,
+    name: repo.name,
+    owner,
+    fullName: repo.full_name,
+    isPrivate: repo.private,
+  };
 }
 
 // The `repositories`/`repositories_added` payloads on installation events
@@ -21,8 +32,15 @@ function toGithubRepo(repo: { id: number; name: string; full_name: string; priva
 // explicit API call to seed their pet with the real current count —
 // otherwise a repo installed with pre-existing open issues would report
 // healthy until its next issue webhook. See docs/open-questions.md.
-async function fetchOpenIssueCount(installationId: number, owner: string, repo: string) {
-  const { data } = await getInstallationOctokit(installationId).rest.repos.get({ owner, repo });
+async function fetchOpenIssueCount(
+  installationId: number,
+  owner: string,
+  repo: string,
+) {
+  const { data } = await getInstallationOctokit(installationId).rest.repos.get({
+    owner,
+    repo,
+  });
   return data.open_issues_count;
 }
 
@@ -36,10 +54,17 @@ async function addRepoWithIssueCount(
 ) {
   const githubRepo = toGithubRepo(repo);
   try {
-    const openIssueCount = await fetchOpenIssueCount(installationId, githubRepo.owner, githubRepo.name);
+    const openIssueCount = await fetchOpenIssueCount(
+      installationId,
+      githubRepo.owner,
+      githubRepo.name,
+    );
     await upsertRepo(installationId, githubRepo, openIssueCount);
   } catch (err) {
-    console.error(`Failed to add repo ${githubRepo.fullName} for installation ${installationId}`, err);
+    console.error(
+      `Failed to add repo ${githubRepo.fullName} for installation ${installationId}`,
+      err,
+    );
   }
 }
 
@@ -57,23 +82,26 @@ function getWebhooks(): Webhooks {
 
   const webhooks = new Webhooks({ secret });
 
-  webhooks.on(["installation.created", "installation.unsuspend"], async ({ payload }) => {
-    const account = payload.installation.account;
-    if (!account) return;
+  webhooks.on(
+    ["installation.created", "installation.unsuspend"],
+    async ({ payload }) => {
+      const account = payload.installation.account;
+      if (!account) return;
 
-    await upsertInstallation({
-      id: payload.installation.id,
-      accountLogin: "login" in account ? account.login : account.slug,
-      accountType: "type" in account ? account.type : "Organization",
-    });
+      await upsertInstallation({
+        id: payload.installation.id,
+        accountLogin: "login" in account ? account.login : account.slug,
+        accountType: "type" in account ? account.type : "Organization",
+      });
 
-    // One repo's lookup failing (rate limit, repo gone, etc.) shouldn't
-    // abort the rest of a multi-repo install batch — isolate each repo so
-    // the others still get their pet created.
-    for (const repo of payload.repositories ?? []) {
-      await addRepoWithIssueCount(payload.installation.id, repo);
-    }
-  });
+      // One repo's lookup failing (rate limit, repo gone, etc.) shouldn't
+      // abort the rest of a multi-repo install batch — isolate each repo so
+      // the others still get their pet created.
+      for (const repo of payload.repositories ?? []) {
+        await addRepoWithIssueCount(payload.installation.id, repo);
+      }
+    },
+  );
 
   webhooks.on("installation_repositories.added", async ({ payload }) => {
     for (const repo of payload.repositories_added) {
@@ -99,9 +127,12 @@ function getWebhooks(): Webhooks {
   // the badge endpoint's privacy gate relies on, see docs/adr/011) from
   // going stale. Requires the GitHub App to be subscribed to the
   // `repository` event — see docs/github-app-setup.md.
-  webhooks.on(["repository.privatized", "repository.publicized"], async ({ payload }) => {
-    await setRepoPrivate(payload.repository.id, payload.repository.private);
-  });
+  webhooks.on(
+    ["repository.privatized", "repository.publicized"],
+    async ({ payload }) => {
+      await setRepoPrivate(payload.repository.id, payload.repository.private);
+    },
+  );
 
   webhooks.on("release.published", async ({ payload }) => {
     await markDeployed(payload.repository.id);
@@ -113,7 +144,10 @@ function getWebhooks(): Webhooks {
   webhooks.on(
     ["issues.opened", "issues.closed", "issues.reopened", "issues.deleted"],
     async ({ payload }) => {
-      await setOpenIssueCount(payload.repository.id, payload.repository.open_issues_count);
+      await setOpenIssueCount(
+        payload.repository.id,
+        payload.repository.open_issues_count,
+      );
     },
   );
 
@@ -128,14 +162,25 @@ export async function POST(req: NextRequest) {
   const payload = await req.text();
 
   if (!id || !name || !signature) {
-    return NextResponse.json({ error: "missing github webhook headers" }, { status: 400 });
+    return NextResponse.json(
+      { error: "missing github webhook headers" },
+      { status: 400 },
+    );
   }
 
   try {
-    await getWebhooks().verifyAndReceive({ id, name: name as never, signature, payload });
+    await getWebhooks().verifyAndReceive({
+      id,
+      name: name as never,
+      signature,
+      payload,
+    });
   } catch (err) {
     console.error("GitHub webhook rejected", err);
-    return NextResponse.json({ error: "invalid signature or handler error" }, { status: 400 });
+    return NextResponse.json(
+      { error: "invalid signature or handler error" },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json({ ok: true });

@@ -24,7 +24,10 @@ export async function upsertInstallation(installation: GithubInstallation) {
     .values(installation)
     .onConflictDoUpdate({
       target: installations.id,
-      set: { accountLogin: installation.accountLogin, accountType: installation.accountType },
+      set: {
+        accountLogin: installation.accountLogin,
+        accountType: installation.accountType,
+      },
     });
 }
 
@@ -33,7 +36,11 @@ export async function upsertInstallation(installation: GithubInstallation) {
 // repo installed with pre-existing open issues would default to 0 and
 // under-report Sick the first time it's deployed. Ignored for a repo that
 // already has a pet, since that pet's count is already tracked live.
-export async function upsertRepo(installationId: number, repo: GithubRepo, openIssueCount: number) {
+export async function upsertRepo(
+  installationId: number,
+  repo: GithubRepo,
+  openIssueCount: number,
+) {
   await db
     .insert(repos)
     .values({ ...repo, installationId })
@@ -86,7 +93,9 @@ export async function recordCommit(repoId: number) {
   // Can happen if a deploy webhook landed between the read above and this
   // write — not an error, just a lost race, nothing to retry.
   if (updated.length === 0) {
-    console.warn(`recordCommit: pet ${repoId} left development phase mid-update, commit dropped`);
+    console.warn(
+      `recordCommit: pet ${repoId} left development phase mid-update, commit dropped`,
+    );
   }
 }
 
@@ -111,13 +120,18 @@ export async function markDeployed(repoId: number) {
   // installation_repositories event that creates the pet row. Not retried —
   // see docs/open-questions.md.
   if (updated.length === 0) {
-    console.warn(`markDeployed: no pet for repo ${repoId}, deploy event dropped`);
+    console.warn(
+      `markDeployed: no pet for repo ${repoId}, deploy event dropped`,
+    );
   }
 }
 
 // Issues opened/closed: only affects Sick status once a pet is deployed.
 // See docs/adr/005-sickness-signal.md.
-export async function setOpenIssueCount(repoId: number, openIssueCount: number) {
+export async function setOpenIssueCount(
+  repoId: number,
+  openIssueCount: number,
+) {
   // sick derived from phase within this same UPDATE — see markDeployed.
   const updated = await db
     .update(pets)
@@ -130,7 +144,9 @@ export async function setOpenIssueCount(repoId: number, openIssueCount: number) 
     .returning({ id: pets.id });
 
   if (updated.length === 0) {
-    console.warn(`setOpenIssueCount: no pet for repo ${repoId}, issue event dropped`);
+    console.warn(
+      `setOpenIssueCount: no pet for repo ${repoId}, issue event dropped`,
+    );
   }
 }
 
@@ -143,11 +159,19 @@ export async function setRepoPrivate(repoId: number, isPrivate: boolean) {
 }
 
 export async function getRepoById(repoId: number) {
-  const [repo] = await db.select().from(repos).where(eq(repos.id, repoId)).limit(1);
+  const [repo] = await db
+    .select()
+    .from(repos)
+    .where(eq(repos.id, repoId))
+    .limit(1);
   return repo ?? null;
 }
 
 export async function getPetByRepoId(repoId: number) {
-  const [pet] = await db.select().from(pets).where(eq(pets.repoId, repoId)).limit(1);
+  const [pet] = await db
+    .select()
+    .from(pets)
+    .where(eq(pets.repoId, repoId))
+    .limit(1);
   return pet ?? null;
 }

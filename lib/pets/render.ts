@@ -141,12 +141,24 @@ const TAIL_CLIPS = `<clipPath id="tailclipHatch"><path d="M 18 56 C 38 62, 42 44
 // stage). Typing PALETTES against this union, rather than a bare
 // Record<string, string>, makes a missing/mistyped key in either mood a
 // compile error instead of a color that silently stays "healthy".
-type SourceColor = "#FB923C" | "#F97316" | "#EA711C" | "#C2560B" | "#FFD9B8" | "#FFF3E0" | "#FCA5A5" | "#E8B778" | "#C98A3E";
+type SourceColor =
+  | "#FB923C"
+  | "#F97316"
+  | "#EA711C"
+  | "#C2560B"
+  | "#FFD9B8"
+  | "#FFF3E0"
+  | "#FCA5A5"
+  | "#E8B778"
+  | "#C98A3E";
 
 // Global find/replace of the healthy hex values into a mood-tinted
 // equivalent. Healthy needs no entry — renderPetSvg skips recoloring for it
 // entirely.
-const PALETTES: Record<Exclude<Mood, "healthy">, Record<SourceColor, string>> = {
+const PALETTES: Record<
+  Exclude<Mood, "healthy">,
+  Record<SourceColor, string>
+> = {
   tired: {
     "#FB923C": "#C99B72",
     "#F97316": "#B97A46",
@@ -183,7 +195,10 @@ function recolor(svg: string, mood: Mood): string {
 // Eye/mouth anchor points, hand-measured from each stage's CONTENT above, so
 // the mood overlay lines up with the actual art instead of guessing. Egg has
 // no face, so it only gets the palette recolor.
-const FACE: Record<Exclude<Stage, "egg">, { eyeXs: [number, number]; eyeY: number; eyeR: number; mouthY: number }> = {
+const FACE: Record<
+  Exclude<Stage, "egg">,
+  { eyeXs: [number, number]; eyeY: number; eyeR: number; mouthY: number }
+> = {
   hatchling: { eyeXs: [-12, 12], eyeY: -8, eyeR: 9, mouthY: 13 },
   juvenile: { eyeXs: [-11, 11], eyeY: -8, eyeR: 7.5, mouthY: 11 },
   adult: { eyeXs: [-12, 12], eyeY: -9, eyeR: 9, mouthY: 10 },
@@ -191,7 +206,11 @@ const FACE: Record<Exclude<Stage, "egg">, { eyeXs: [number, number]; eyeY: numbe
 
 // Every stage's main fur fill is the same "#FB923C", so the overlay can
 // blend into the (already recolored) head using one shared lookup.
-const FUR_COLOR: Record<Mood, string> = { healthy: "#FB923C", tired: PALETTES.tired["#FB923C"], sick: PALETTES.sick["#FB923C"] };
+const FUR_COLOR: Record<Mood, string> = {
+  healthy: "#FB923C",
+  tired: PALETTES.tired["#FB923C"],
+  sick: PALETTES.sick["#FB923C"],
+};
 
 function moodOverlay(stage: Stage, mood: Mood): string {
   if (stage === "egg" || mood === "healthy") return "";
@@ -202,7 +221,10 @@ function moodOverlay(stage: Stage, mood: Mood): string {
     // Droopy eyelids: a fur-colored rect over the top ~65% of each eye reads
     // as half-lidded/sleepy without fully closing the eye.
     return face.eyeXs
-      .map((x) => `<rect x="${x - face.eyeR}" y="${face.eyeY - face.eyeR}" width="${face.eyeR * 2}" height="${face.eyeR * 1.3}" fill="${furColor}"/>`)
+      .map(
+        (x) =>
+          `<rect x="${x - face.eyeR}" y="${face.eyeY - face.eyeR}" width="${face.eyeR * 2}" height="${face.eyeR * 1.3}" fill="${furColor}"/>`,
+      )
       .join("");
   }
 
@@ -218,9 +240,16 @@ const BAR_HEIGHT = 12;
 const BAR_INSET_X = 14;
 const BAR_GAP_FROM_ART = 24;
 
-export function renderPetSvg(xp: number, health: number, sick: boolean): string {
+export function renderPetSvg(
+  xp: number,
+  health: number,
+  sick: boolean,
+): string {
   const { stage, floor, ceiling } = stageProgress(xp);
-  const progress = ceiling === null ? 1 : Math.max(0, Math.min(1, (xp - floor) / (ceiling - floor)));
+  const progress =
+    ceiling === null
+      ? 1
+      : Math.max(0, Math.min(1, (xp - floor) / (ceiling - floor)));
   const label = ceiling === null ? `${xp} XP (max)` : `${xp} / ${ceiling} XP`;
   const mood = moodFor(health, sick);
 

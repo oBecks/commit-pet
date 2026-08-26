@@ -6,14 +6,21 @@ const MAX_HEALTH = 100;
 const DECAY_PER_DAY = 5;
 const COMMIT_BOOST = 20;
 
-export function currentHealth(storedHealth: number, lastCommitAt: Date | null): number {
+export function currentHealth(
+  storedHealth: number,
+  lastCommitAt: Date | null,
+): number {
   if (!lastCommitAt) return storedHealth;
-  const daysSince = (Date.now() - lastCommitAt.getTime()) / (1000 * 60 * 60 * 24);
+  const daysSince =
+    (Date.now() - lastCommitAt.getTime()) / (1000 * 60 * 60 * 24);
   const decayed = storedHealth - DECAY_PER_DAY * Math.max(0, daysSince);
   return clamp(Math.round(decayed));
 }
 
-export function boostedHealth(storedHealth: number, lastCommitAt: Date | null): number {
+export function boostedHealth(
+  storedHealth: number,
+  lastCommitAt: Date | null,
+): number {
   return clamp(currentHealth(storedHealth, lastCommitAt) + COMMIT_BOOST);
 }
 
