@@ -16,7 +16,9 @@ export function GrowthCard({ pet }: { pet: DashboardPet }) {
       <Bar progress={progress} />
       <span className="text-xs text-dash-muted">{label}</span>
       <p className="text-xs text-dash-muted">
-        Last commit {pet.lastCommitRelative}
+        {pet.lastCommitRelative
+          ? `Last commit ${pet.lastCommitRelative}`
+          : "No commits yet"}
       </p>
     </div>
   );

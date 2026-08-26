@@ -39,7 +39,7 @@ async function PetsGrid({ installationIds }: { installationIds: number[] }) {
         >
           install Commit Pet
         </a>{" "}
-        on a repo you own to get one.
+        on a repo you can access to get one.
       </p>
     );
   }

@@ -6,7 +6,7 @@ commit-pet uses [Clerk](https://clerk.com) for user accounts, with GitHub as the
 
 1. Sign up / log in at [dashboard.clerk.com](https://dashboard.clerk.com) and create a new application (e.g. "Commit Pet").
 2. On the **API Keys** page, copy the **Publishable key** and **Secret key** into `.env.local`:
-   ```
+   ```env
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
    CLERK_SECRET_KEY=
    ```

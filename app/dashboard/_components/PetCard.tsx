@@ -71,7 +71,11 @@ export function PetCard({ pet }: { pet: DashboardPet }) {
 
       <div className="text-xs text-dash-muted">
         {pet.phase === "development" ? (
-          `Last commit ${pet.lastCommitRelative}`
+          pet.lastCommitRelative ? (
+            `Last commit ${pet.lastCommitRelative}`
+          ) : (
+            "No commits yet"
+          )
         ) : pet.openIssueCount > 0 ? (
           <span className="inline-flex items-center gap-1.5 font-semibold text-sick-text">
             <svg
