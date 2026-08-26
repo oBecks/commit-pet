@@ -4,6 +4,22 @@ A little pet that grows as you commit — and gets to retire once your project s
 
 <img src="https://commit-pet.vercel.app/api/badge/1346542776" alt="commit-pet badge" width="150" height="220" />
 
+## Install it on your repo
+
+1. **[Install the GitHub App](https://github.com/apps/commit-pet)** and pick the repo(s) you want a pet for.
+2. **Grab your repo's numeric ID** — there's no dashboard yet, so the quickest way is:
+   ```bash
+   curl -s https://api.github.com/repos/<owner>/<repo> | grep -m1 '"id"'
+   ```
+3. **Drop the badge in your own README**, swapping in that ID:
+   ```md
+   <img src="https://commit-pet.vercel.app/api/badge/<repoId>" alt="commit-pet badge" width="150" height="220" />
+   ```
+
+That's it — every commit from now on feeds your pet.
+
+> **Note:** only public repos are supported right now — private repos 404 on the badge endpoint ([ADR-011](docs/adr/011-private-repo-badges-blocked.md)).
+
 ## How it works
 
 Every repo with commit-pet installed gets its own pet, tied to that repo's activity:
@@ -17,7 +33,7 @@ See [docs/glossary.md](docs/glossary.md) for the full vocabulary, and [docs/adr/
 
 ## Status
 
-This is a personal project, still early. The GitHub App is currently **private** (only installable by its owner) — the badge endpoint itself works for any public repo it's installed on, but there's no public "install this on your repo" flow yet.
+This is a personal project, still early. The GitHub App is public and installable by anyone, but there's no dashboard or self-serve onboarding UI yet — installing and grabbing your repo ID is a manual, GitHub-side process (see above).
 
 ## Getting Started
 
