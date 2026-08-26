@@ -8,10 +8,7 @@ export async function getUserGithubToken(): Promise<string | null> {
   if (!userId) return null;
 
   const client = await clerkClient();
-  const { data } = await client.users.getUserOauthAccessToken(
-    userId,
-    "github",
-  );
+  const { data } = await client.users.getUserOauthAccessToken(userId, "github");
   return data[0]?.token ?? null;
 }
 
