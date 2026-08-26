@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getPetByRepoId, getRepoById } from "@/lib/pets/service";
-import { stageForXp } from "@/lib/pets/growth";
 import { renderPetSvg } from "@/lib/pets/render";
 
 // Public, unauthenticated by design (docs/adr/006-presentation-surfaces.md).
@@ -24,7 +23,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ repoId:
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  const svg = renderPetSvg(stageForXp(pet.xp));
+  const svg = renderPetSvg(pet.xp);
   return new NextResponse(svg, {
     headers: {
       "Content-Type": "image/svg+xml",

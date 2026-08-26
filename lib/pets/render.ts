@@ -1,4 +1,4 @@
-import type { Stage } from "./growth";
+import { stageProgress, type Stage } from "./growth";
 
 // Hand-authored fox illustration, one variant per growth stage. Colors and
 // paths are fixed art assets, not derived from pet data — see docs/adr/006
@@ -130,15 +130,33 @@ const TAIL_CLIPS = `<clipPath id="tailclipHatch"><path d="M 18 56 C 38 62, 42 44
 <clipPath id="tailclipJuv"><path d="M 22 52 C 46 58, 50 34, 40 18 C 34 28, 28 42, 19 44 Z"/></clipPath>
 <clipPath id="tailclipAdult"><path d="M 24 58 C 48 64, 46 -4, 32 -20 C 18 -36, 10 10, 16 42 Z"/></clipPath>`;
 
-export function renderPetSvg(stage: Stage): string {
-  const viewBox = VIEWBOX[stage];
-  const [, , w, h] = viewBox.split(" ").map(Number);
-  const height = 220;
-  const width = Math.round((height * w) / h);
+// Extra viewBox space reserved below the art for the xp progress bar + label.
+const BAR_AREA_HEIGHT = 46;
+const BAR_HEIGHT = 12;
+const BAR_INSET_X = 14;
+const BAR_GAP_FROM_ART = 24;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${viewBox}" role="img">
-<title>commit-pet (${stage})</title>
+export function renderPetSvg(xp: number): string {
+  const { stage, floor, ceiling } = stageProgress(xp);
+  const progress = ceiling === null ? 1 : Math.max(0, Math.min(1, (xp - floor) / (ceiling - floor)));
+  const label = ceiling === null ? `${xp} XP (max)` : `${xp} / ${ceiling} XP`;
+
+  const [x0, y0, w, artHeight] = VIEWBOX[stage].split(" ").map(Number);
+  const totalHeight = artHeight + BAR_AREA_HEIGHT;
+  const barX = x0 + BAR_INSET_X;
+  const barWidth = w - BAR_INSET_X * 2;
+  const barY = y0 + artHeight + BAR_GAP_FROM_ART;
+
+  const height = 220;
+  const width = Math.round((height * w) / totalHeight);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${x0} ${y0} ${w} ${totalHeight}" role="img">
+<title>commit-pet (${stage}, ${xp} xp)</title>
 <defs>${TAIL_CLIPS}</defs>
+<rect x="${x0 + 2}" y="${y0 + 2}" width="${w - 4}" height="${totalHeight - 4}" rx="16" fill="#FFFBF5" stroke="#E8D9BE" stroke-width="2"/>
 ${CONTENT[stage]}
+<rect x="${barX}" y="${barY}" width="${barWidth}" height="${BAR_HEIGHT}" rx="6" fill="#F0DEC4"/>
+<rect x="${barX}" y="${barY}" width="${barWidth * progress}" height="${BAR_HEIGHT}" rx="6" fill="#FB923C"/>
+<text x="${x0 + w / 2}" y="${barY - 8}" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#57534E">${label}</text>
 </svg>`;
 }
