@@ -137,10 +137,16 @@ const TAIL_CLIPS = `<clipPath id="tailclipHatch"><path d="M 18 56 C 38 62, 42 44
 <clipPath id="tailclipJuv"><path d="M 22 52 C 46 58, 50 34, 40 18 C 34 28, 28 42, 19 44 Z"/></clipPath>
 <clipPath id="tailclipAdult"><path d="M 24 58 C 48 64, 46 -4, 32 -20 C 18 -36, 10 10, 16 42 Z"/></clipPath>`;
 
-// Global find/replace of the "healthy" hex values used across CONTENT above
-// (consistent across every stage) into a mood-tinted equivalent. Healthy
-// needs no entry — renderPetSvg skips recoloring for it entirely.
-const PALETTES: Record<Exclude<Mood, "healthy">, Record<string, string>> = {
+// Every hex fill/stroke used across CONTENT above (consistent across every
+// stage). Typing PALETTES against this union, rather than a bare
+// Record<string, string>, makes a missing/mistyped key in either mood a
+// compile error instead of a color that silently stays "healthy".
+type SourceColor = "#FB923C" | "#F97316" | "#EA711C" | "#C2560B" | "#FFD9B8" | "#FFF3E0" | "#FCA5A5" | "#E8B778" | "#C98A3E";
+
+// Global find/replace of the healthy hex values into a mood-tinted
+// equivalent. Healthy needs no entry — renderPetSvg skips recoloring for it
+// entirely.
+const PALETTES: Record<Exclude<Mood, "healthy">, Record<SourceColor, string>> = {
   tired: {
     "#FB923C": "#C99B72",
     "#F97316": "#B97A46",
