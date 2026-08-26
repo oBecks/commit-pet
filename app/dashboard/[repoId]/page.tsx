@@ -1,0 +1,40 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getSamplePet } from "@/lib/pets/sample-data";
+import { Hero } from "../_components/Hero";
+import { GrowthCard } from "../_components/GrowthCard";
+import { OpenIssuesCard } from "../_components/OpenIssuesCard";
+import { HealthCard } from "../_components/HealthCard";
+import { BadgeCard } from "../_components/BadgeCard";
+import { RepoInfoCard } from "../_components/RepoInfoCard";
+
+export default async function PetDetailPage({ params }: PageProps<"/dashboard/[repoId]">) {
+  const { repoId } = await params;
+  const pet = getSamplePet(repoId);
+  if (!pet) notFound();
+
+  return (
+    <div className="flex flex-1 flex-col gap-6 px-6 py-8 sm:px-12">
+      <div className="flex items-center gap-2 text-[13px]">
+        <Link href="/dashboard" className="font-semibold text-dash-accent hover:text-[#C2560B]">
+          ← Dashboard
+        </Link>
+        <span className="text-dash-muted">/</span>
+        <span className="text-dash-muted">{pet.fullName}</span>
+      </div>
+
+      <div className="flex flex-col items-start gap-6 lg:flex-row">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 lg:flex-[2]">
+          <Hero pet={pet} />
+          {pet.phase === "development" ? <GrowthCard pet={pet} /> : <OpenIssuesCard pet={pet} />}
+        </div>
+
+        <div className="flex w-full flex-col gap-6 lg:w-auto lg:flex-1">
+          <HealthCard pet={pet} />
+          <BadgeCard pet={pet} />
+          <RepoInfoCard pet={pet} />
+        </div>
+      </div>
+    </div>
+  );
+}

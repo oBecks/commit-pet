@@ -10,6 +10,30 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Dashboard palette — lifted from the badge art's fixed light theme
+     (lib/pets/render.ts), not the app-wide background/foreground tokens
+     above, since the badge (and now the Dashboard) doesn't follow system
+     dark mode. */
+  --color-dash-bg: #f6eedf;
+  --color-dash-card: #fffbf5;
+  --color-dash-border: #e8d9be;
+  --color-dash-heading: #2b2115;
+  --color-dash-text: #57534e;
+  --color-dash-muted: #8a7f6e;
+  --color-dash-accent: #fb923c;
+  --color-dash-track: #f0dec4;
+  --color-dash-neutral-pill: #efe7da;
+
+  --color-healthy-bg: #e6f4e0;
+  --color-healthy-text: #3f7a34;
+  --color-healthy-dot: #5fa854;
+  --color-tired-bg: #f5efe4;
+  --color-tired-text: #6b5645;
+  --color-tired-dot: #b97a46;
+  --color-sick-bg: #f0edd6;
+  --color-sick-text: #6b5e2e;
+  --color-sick-dot: #ad9b3e;
 }
 
 @media (prefers-color-scheme: dark) {
