@@ -29,12 +29,24 @@ export function stageForXp(xp: number): Stage {
 // floor: the xp threshold the current stage started at. ceiling: the next
 // stage's threshold, or null if already at the top stage (adult) — used to
 // render the xp progress bar under the badge art.
-export function stageProgress(xp: number): { stage: Stage; floor: number; ceiling: number | null } {
+export function stageProgress(xp: number): {
+  stage: Stage;
+  floor: number;
+  ceiling: number | null;
+} {
   for (let i = 0; i < STAGE_THRESHOLDS.length; i++) {
     const [stage, floor] = STAGE_THRESHOLDS[i];
     if (xp >= floor) {
-      return { stage, floor, ceiling: i > 0 ? STAGE_THRESHOLDS[i - 1][1] : null };
+      return {
+        stage,
+        floor,
+        ceiling: i > 0 ? STAGE_THRESHOLDS[i - 1][1] : null,
+      };
     }
   }
-  return { stage: "egg", floor: 0, ceiling: STAGE_THRESHOLDS[STAGE_THRESHOLDS.length - 1][1] };
+  return {
+    stage: "egg",
+    floor: 0,
+    ceiling: STAGE_THRESHOLDS[STAGE_THRESHOLDS.length - 1][1],
+  };
 }

@@ -7,7 +7,10 @@ import { currentHealth } from "@/lib/pets/health";
 // A private repo's badge must not confirm the repo's existence or state, so
 // it gets the same 404 as an unknown repo id rather than a distinct response
 // (see the "Private repo badges" open question in docs/open-questions.md).
-export async function GET(_req: Request, { params }: { params: Promise<{ repoId: string }> }) {
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ repoId: string }> },
+) {
   const { repoId: repoIdParam } = await params;
   const repoId = Number(repoIdParam);
   if (!Number.isInteger(repoId)) {

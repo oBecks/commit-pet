@@ -11,11 +11,11 @@ Go to **Settings → Developer settings → GitHub Apps → New GitHub App** (fo
 
 ## 2. Permissions (repository)
 
-| Permission | Access | Why |
-|---|---|---|
-| Contents | Read-only | Needed to receive `push` events |
-| Issues | Read-only | Needed for the Sick signal ([ADR-005](adr/005-sickness-signal.md)) |
-| Metadata | Read-only | Mandatory baseline permission |
+| Permission | Access    | Why                                                                |
+| ---------- | --------- | ------------------------------------------------------------------ |
+| Contents   | Read-only | Needed to receive `push` events                                    |
+| Issues     | Read-only | Needed for the Sick signal ([ADR-005](adr/005-sickness-signal.md)) |
+| Metadata   | Read-only | Mandatory baseline permission                                      |
 
 Only request these three for now — anything the Dashboard/Badge/MCP work later needs should be added deliberately, not preemptively.
 
