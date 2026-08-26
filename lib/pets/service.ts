@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { installations, repos, pets } from "@/lib/db/schema";
 import { boostedHealth } from "./health";
+import { boostedXp } from "./growth";
 
 type GithubRepo = {
   id: number;
@@ -71,6 +72,7 @@ export async function recordCommit(repoId: number) {
     .update(pets)
     .set({
       health: boostedHealth(pet.health, pet.lastCommitAt),
+      xp: boostedXp(pet.xp),
       lastCommitAt: new Date(),
       updatedAt: new Date(),
     })
@@ -119,6 +121,11 @@ export async function setOpenIssueCount(repoId: number, openIssueCount: number) 
   if (updated.length === 0) {
     console.warn(`setOpenIssueCount: no pet for repo ${repoId}, issue event dropped`);
   }
+}
+
+export async function getRepoById(repoId: number) {
+  const [repo] = await db.select().from(repos).where(eq(repos.id, repoId)).limit(1);
+  return repo ?? null;
 }
 
 export async function getPetByRepoId(repoId: number) {
