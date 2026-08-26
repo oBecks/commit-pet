@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { installations, repos, pets } from "@/lib/db/schema";
 import { boostedHealth } from "./health";
@@ -68,18 +68,34 @@ export async function recordCommit(repoId: number) {
   const pet = await getPetByRepoId(repoId);
   if (!pet || pet.phase !== "development") return;
 
-  await db
+  // Re-checks phase in the WHERE clause, not just the read above, so a
+  // concurrent markDeployed() landing between that read and this write can't
+  // have a stale development-phase commit still bump health/XP after the
+  // pet has already left development.
+  //
+  // health is still computed from the `pet` read above rather than a
+  // database-side expression, unlike xp — its decay math depends on
+  // lastCommitAt in a way that isn't safely reducible to a single SQL
+  // expression while the curve itself is still an open product question
+  // (docs/open-questions.md); porting it now would harden a formula that's
+  // explicitly not final. xp's increment is trivial (flat, clamped) so it
+  // gets the atomic treatment; health's doesn't yet.
+  const updated = await db
     .update(pets)
     .set({
       health: boostedHealth(pet.health, pet.lastCommitAt),
-      // Computed from the column itself (not the `pet` read above) so two
-      // concurrent push deliveries for the same repo can't race and lose an
-      // increment — same reasoning as the sick/openIssueCount updates below.
       xp: sql`LEAST(${pets.xp} + ${XP_PER_COMMIT}, ${MAX_XP})`,
       lastCommitAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(pets.repoId, repoId));
+    .where(and(eq(pets.repoId, repoId), eq(pets.phase, "development")))
+    .returning({ id: pets.id });
+
+  // Can happen if a deploy webhook landed between the read above and this
+  // write — not an error, just a lost race, nothing to retry.
+  if (updated.length === 0) {
+    console.warn(`recordCommit: pet ${repoId} left development phase mid-update, commit dropped`);
+  }
 }
 
 // Release published (or an explicit MCP deploy call): enter the deployed
