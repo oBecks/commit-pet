@@ -1,7 +1,8 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { installations, repos, pets } from "@/lib/db/schema";
 import { boostedHealth } from "./health";
+import { XP_PER_COMMIT, MAX_XP } from "./growth";
 
 type GithubRepo = {
   id: number;
@@ -67,14 +68,26 @@ export async function recordCommit(repoId: number) {
   const pet = await getPetByRepoId(repoId);
   if (!pet || pet.phase !== "development") return;
 
-  await db
+  // Re-checks phase in the WHERE clause (not just the read above) so a
+  // concurrent markDeployed() can't leave a stale commit landing after the
+  // pet already left development. health's own concurrency gap is tracked
+  // in docs/open-questions.md rather than fixed here.
+  const updated = await db
     .update(pets)
     .set({
       health: boostedHealth(pet.health, pet.lastCommitAt),
+      xp: sql`LEAST(${pets.xp} + ${XP_PER_COMMIT}, ${MAX_XP})`,
       lastCommitAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(pets.repoId, repoId));
+    .where(and(eq(pets.repoId, repoId), eq(pets.phase, "development")))
+    .returning({ id: pets.id });
+
+  // Can happen if a deploy webhook landed between the read above and this
+  // write — not an error, just a lost race, nothing to retry.
+  if (updated.length === 0) {
+    console.warn(`recordCommit: pet ${repoId} left development phase mid-update, commit dropped`);
+  }
 }
 
 // Release published (or an explicit MCP deploy call): enter the deployed
@@ -119,6 +132,19 @@ export async function setOpenIssueCount(repoId: number, openIssueCount: number) 
   if (updated.length === 0) {
     console.warn(`setOpenIssueCount: no pet for repo ${repoId}, issue event dropped`);
   }
+}
+
+// Repository visibility changed (GitHub's `repository.privatized`/
+// `publicized` events) — keeps the badge endpoint's isPrivate check
+// (docs/adr/011-private-repo-badges-blocked.md) from serving a stale
+// decision after a repo's visibility changes post-install.
+export async function setRepoPrivate(repoId: number, isPrivate: boolean) {
+  await db.update(repos).set({ isPrivate }).where(eq(repos.id, repoId));
+}
+
+export async function getRepoById(repoId: number) {
+  const [repo] = await db.select().from(repos).where(eq(repos.id, repoId)).limit(1);
+  return repo ?? null;
 }
 
 export async function getPetByRepoId(repoId: number) {

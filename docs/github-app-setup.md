@@ -26,6 +26,12 @@ Only request these three for now — anything the Dashboard/Badge/MCP work later
 - `issues`
 - `installation`
 - `installation_repositories`
+- `repository` (specifically the `privatized`/`publicized` actions — keeps
+  the badge endpoint's private-repo check from going stale if a repo's
+  visibility changes after install; see
+  [ADR-011](adr/011-private-repo-badges-blocked.md)). GitHub may prompt for
+  an additional permission (e.g. Administration: read) when you add this
+  event — grant whatever it asks for.
 
 ## 4. After creation
 

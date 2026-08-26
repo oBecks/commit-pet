@@ -6,6 +6,7 @@ import {
   recordCommit,
   removeRepo,
   setOpenIssueCount,
+  setRepoPrivate,
   upsertInstallation,
   upsertRepo,
 } from "@/lib/pets/service";
@@ -87,7 +88,19 @@ function getWebhooks(): Webhooks {
   });
 
   webhooks.on("push", async ({ payload }) => {
+    // GitHub also sends `push` for branch/tag creation and deletion, with an
+    // empty commits array — skip those so they don't award health/XP for
+    // something that isn't a commit.
+    if (payload.commits.length === 0) return;
     await recordCommit(payload.repository.id);
+  });
+
+  // Repo visibility can change after install; keep repos.isPrivate (which
+  // the badge endpoint's privacy gate relies on, see docs/adr/011) from
+  // going stale. Requires the GitHub App to be subscribed to the
+  // `repository` event — see docs/github-app-setup.md.
+  webhooks.on(["repository.privatized", "repository.publicized"], async ({ payload }) => {
+    await setRepoPrivate(payload.repository.id, payload.repository.private);
   });
 
   webhooks.on("release.published", async ({ payload }) => {

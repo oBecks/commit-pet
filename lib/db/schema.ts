@@ -45,6 +45,9 @@ export const pets = pgTable("pets", {
   // See lib/pets/health.ts and docs/open-questions.md.
   health: integer("health").notNull().default(100),
   lastCommitAt: timestamp("last_commit_at"),
+  // Growth stage (egg/hatchling/juvenile/adult) is derived from xp on read,
+  // same pattern as health. See lib/pets/growth.ts and docs/open-questions.md.
+  xp: integer("xp").notNull().default(0),
   openIssueCount: integer("open_issue_count").notNull().default(0),
   sick: boolean("sick").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
