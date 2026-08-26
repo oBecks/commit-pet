@@ -1,20 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type Status = "idle" | "copied" | "error";
 
 export function CopyButton({ text }: { text: string }) {
   const [status, setStatus] = useState<Status>("idle");
+  const resetTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function handleClick() {
+    if (resetTimeout.current) clearTimeout(resetTimeout.current);
     try {
       await navigator.clipboard.writeText(text);
       setStatus("copied");
     } catch {
       setStatus("error");
     }
-    setTimeout(() => setStatus("idle"), 1500);
+    resetTimeout.current = setTimeout(() => setStatus("idle"), 1500);
   }
 
   return (
