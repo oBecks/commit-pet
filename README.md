@@ -28,3 +28,4 @@ pnpm dev
 Open [http://localhost:3000](http://localhost:3000) to view it.
 
 Setting up your own instance (GitHub App, database, env vars) is documented in [docs/github-app-setup.md](docs/github-app-setup.md).
+
