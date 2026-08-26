@@ -7,8 +7,15 @@ type Status = "idle" | "copied" | "error";
 export function CopyButton({ text }: { text: string }) {
   const [status, setStatus] = useState<Status>("idle");
   const resetTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pending = useRef(false);
 
   async function handleClick() {
+    // Guards against overlapping clicks, not just back-to-back ones: without
+    // this, two in-flight writeText() calls can each resolve and schedule
+    // their own reset timeout, and the second overwrites the ref before the
+    // first's timeout is ever cleared.
+    if (pending.current) return;
+    pending.current = true;
     if (resetTimeout.current) clearTimeout(resetTimeout.current);
     try {
       await navigator.clipboard.writeText(text);
@@ -16,6 +23,7 @@ export function CopyButton({ text }: { text: string }) {
     } catch {
       setStatus("error");
     }
+    pending.current = false;
     resetTimeout.current = setTimeout(() => setStatus("idle"), 1500);
   }
 
