@@ -2,7 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { installations, repos, pets } from "@/lib/db/schema";
 import { boostedHealth } from "./health";
-import { XP_PER_COMMIT, MAX_XP } from "./growth";
+import { BASE_XP_PER_COMMIT, XP_DECAY_RATE, MAX_XP } from "./growth";
 
 type GithubRepo = {
   id: number;
@@ -70,20 +70,44 @@ export async function removeRepo(repoId: number) {
 }
 
 // Push event: feed the pet if it's still in the development phase.
-// See docs/adr/003-pet-lifecycle-phases.md.
-export async function recordCommit(repoId: number) {
+// See docs/adr/003-pet-lifecycle-phases.md. commitCount is the number of
+// commits in this push — each counts as its own step in that UTC day's
+// diminishing-returns sequence, not one flat award per push. See
+// docs/adr/013-xp-daily-diminishing-returns.md.
+export async function recordCommit(repoId: number, commitCount: number) {
   const pet = await getPetByRepoId(repoId);
   if (!pet || pet.phase !== "development") return;
+
+  // True when lastCommitAt falls on the same UTC calendar day as now() —
+  // shared between commitsToday (below) and the xp expression so a commit
+  // that starts a new day resets both consistently. `now() AT TIME ZONE
+  // 'UTC'` (not bare now()) so the day boundary is pinned to UTC regardless
+  // of the DB session's TimeZone setting.
+  const sameDay = sql`${pets.lastCommitAt} IS NOT NULL AND date_trunc('day', ${pets.lastCommitAt}) = date_trunc('day', now() AT TIME ZONE 'UTC')`;
+  // Commits already recorded today, before this push.
+  const commitsBefore = sql`(CASE WHEN ${sameDay} THEN ${pets.commitsToday} ELSE 0 END)`;
+  // Cumulative XP earned today after N commits — mirrors growth.ts's
+  // dailyXpTotal. Rounded once per cumulative total (not once per push
+  // increment) so a day's total is path-independent: the same commits award
+  // the same XP whether they land in one push or many. See growth.ts.
+  const dailyXpTotal = (commits: ReturnType<typeof sql>) =>
+    sql`ROUND(${BASE_XP_PER_COMMIT} * ((1 - POWER(${XP_DECAY_RATE}, ${commits})) / (1 - ${XP_DECAY_RATE})))::integer`;
 
   // Re-checks phase in the WHERE clause (not just the read above) so a
   // concurrent markDeployed() can't leave a stale commit landing after the
   // pet already left development. health's own concurrency gap is tracked
   // in docs/open-questions.md rather than fixed here.
+  //
+  // xp mirrors growth.ts's xpForPush as a DB-side expression (not a
+  // read-then-write) so concurrent webhook deliveries for the same repo
+  // can't race on a stale read, the same reasoning as the sick/
+  // openIssueCount updates.
   const updated = await db
     .update(pets)
     .set({
       health: boostedHealth(pet.health, pet.lastCommitAt),
-      xp: sql`LEAST(${pets.xp} + ${XP_PER_COMMIT}, ${MAX_XP})`,
+      commitsToday: sql`${commitsBefore} + ${commitCount}`,
+      xp: sql`LEAST(${pets.xp} + (${dailyXpTotal(sql`${commitsBefore} + ${commitCount}`)} - ${dailyXpTotal(commitsBefore)}), ${MAX_XP})`,
       lastCommitAt: new Date(),
       updatedAt: new Date(),
     })

@@ -1,0 +1,1 @@
+ALTER TABLE "pets" ADD COLUMN "commits_today" integer DEFAULT 0 NOT NULL;

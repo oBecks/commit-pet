@@ -120,7 +120,7 @@ function getWebhooks(): Webhooks {
     // empty commits array — skip those so they don't award health/XP for
     // something that isn't a commit.
     if (payload.commits.length === 0) return;
-    await recordCommit(payload.repository.id);
+    await recordCommit(payload.repository.id, payload.commits.length);
   });
 
   // Repo visibility can change after install; keep repos.isPrivate (which

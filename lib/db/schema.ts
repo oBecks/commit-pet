@@ -46,8 +46,12 @@ export const pets = pgTable("pets", {
   health: integer("health").notNull().default(100),
   lastCommitAt: timestamp("last_commit_at"),
   // Growth stage (egg/hatchling/juvenile/adult) is derived from xp on read,
-  // same pattern as health. See lib/pets/growth.ts and docs/open-questions.md.
+  // same pattern as health. See lib/pets/growth.ts and docs/adr/013.
   xp: integer("xp").notNull().default(0),
+  // Commits recorded so far during the current UTC calendar day, reset
+  // whenever lastCommitAt falls on a different day than now(). Backs the XP
+  // daily-diminishing-returns curve — see lib/pets/growth.ts and docs/adr/013.
+  commitsToday: integer("commits_today").notNull().default(0),
   openIssueCount: integer("open_issue_count").notNull().default(0),
   sick: boolean("sick").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
