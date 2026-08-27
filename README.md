@@ -64,11 +64,11 @@ Let a coding agent (Claude Code, Cursor, etc.) see and update your pet directly 
 
 Each token is scoped to exactly one repo, so an agent can only ever see and control the pet for the repo it was configured for. Available tools:
 
-| Tool               | Description                                                                                                                    |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------|
-| `get_pet_status`    | Get the pet's phase (development/deployed), health, mood, growth stage, XP, and open issue count.                            |
-| `mark_deployed`     | Mark the pet as deployed, entering the deployed phase. Idempotent.                                                            |
-| `mark_issue_fixed`  | Tell the pet an issue was fixed, decrementing its open issue count by one — independent of GitHub's own issue tracker.       |
+| Tool               | Description                                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `get_pet_status`   | Get the pet's phase (development/deployed), health, mood, growth stage, XP, and open issue count.                      |
+| `mark_deployed`    | Mark the pet as deployed, entering the deployed phase. Idempotent.                                                     |
+| `mark_issue_fixed` | Tell the pet an issue was fixed, decrementing its open issue count by one — independent of GitHub's own issue tracker. |
 
 See [ADR-007](docs/adr/007-mcp-scope.md) for why the MCP server exposes full pet-state control rather than just deployment marking, and [ADR-014](docs/adr/014-mcp-repo-token-auth.md) for the token auth model.
 
