@@ -84,6 +84,14 @@ export async function recordCommit(repoId: number, commitCount: number) {
   // 'UTC'` (not bare now()) so the day boundary is pinned to UTC regardless
   // of the DB session's TimeZone setting.
   const sameDay = sql`${pets.lastCommitAt} IS NOT NULL AND date_trunc('day', ${pets.lastCommitAt}) = date_trunc('day', now() AT TIME ZONE 'UTC')`;
+  // Commits already recorded today, before this push.
+  const commitsBefore = sql`(CASE WHEN ${sameDay} THEN ${pets.commitsToday} ELSE 0 END)`;
+  // Cumulative XP earned today after N commits — mirrors growth.ts's
+  // dailyXpTotal. Rounded once per cumulative total (not once per push
+  // increment) so a day's total is path-independent: the same commits award
+  // the same XP whether they land in one push or many. See growth.ts.
+  const dailyXpTotal = (commits: ReturnType<typeof sql>) =>
+    sql`ROUND(${BASE_XP_PER_COMMIT} * ((1 - POWER(${XP_DECAY_RATE}, ${commits})) / (1 - ${XP_DECAY_RATE})))::integer`;
 
   // Re-checks phase in the WHERE clause (not just the read above) so a
   // concurrent markDeployed() can't leave a stale commit landing after the
@@ -98,8 +106,8 @@ export async function recordCommit(repoId: number, commitCount: number) {
     .update(pets)
     .set({
       health: boostedHealth(pet.health, pet.lastCommitAt),
-      commitsToday: sql`CASE WHEN ${sameDay} THEN ${pets.commitsToday} + ${commitCount} ELSE ${commitCount} END`,
-      xp: sql`LEAST(${pets.xp} + ROUND(${BASE_XP_PER_COMMIT} * POWER(${XP_DECAY_RATE}, CASE WHEN ${sameDay} THEN ${pets.commitsToday} ELSE 0 END) * ((1 - POWER(${XP_DECAY_RATE}, ${commitCount})) / (1 - ${XP_DECAY_RATE})))::integer, ${MAX_XP})`,
+      commitsToday: sql`${commitsBefore} + ${commitCount}`,
+      xp: sql`LEAST(${pets.xp} + (${dailyXpTotal(sql`${commitsBefore} + ${commitCount}`)} - ${dailyXpTotal(commitsBefore)}), ${MAX_XP})`,
       lastCommitAt: new Date(),
       updatedAt: new Date(),
     })

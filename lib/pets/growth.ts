@@ -14,7 +14,21 @@
 export const BASE_XP_PER_COMMIT = 30;
 export const XP_DECAY_RATE = 0.85;
 
-// xpForPush and the raw SQL update in service.ts's recordCommit both
+// Cumulative XP earned so far today after `commitsToday` commits, rounded
+// once. Rounding here — the running total — rather than rounding each push's
+// award independently is what makes a day's total path-independent: the same
+// commits produce the same total XP whether they land in one push or many.
+// (Rounding per-push instead would let splitting commits into more, smaller
+// pushes creep the day's total above the 200 XP ceiling via accumulated
+// rounding error — each push rounds up to +0.5, and those add up.)
+function dailyXpTotal(commitsToday: number): number {
+  return Math.round(
+    BASE_XP_PER_COMMIT *
+      ((1 - XP_DECAY_RATE ** commitsToday) / (1 - XP_DECAY_RATE)),
+  );
+}
+
+// dailyXpTotal and the raw SQL update in service.ts's recordCommit both
 // implement this same closed-form geometric sum — as a DB-side expression
 // there (not a read-then-write) so concurrent webhook deliveries for the
 // same repo can't race on a stale read, the same reasoning as the sick/
@@ -24,10 +38,9 @@ export function xpForPush(
   commitsSoFarToday: number,
   commitCount: number,
 ): number {
-  return Math.round(
-    BASE_XP_PER_COMMIT *
-      XP_DECAY_RATE ** commitsSoFarToday *
-      ((1 - XP_DECAY_RATE ** commitCount) / (1 - XP_DECAY_RATE)),
+  return (
+    dailyXpTotal(commitsSoFarToday + commitCount) -
+    dailyXpTotal(commitsSoFarToday)
   );
 }
 
