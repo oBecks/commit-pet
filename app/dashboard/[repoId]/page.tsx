@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAccessibleInstallationIds } from "@/lib/github/user-auth";
@@ -8,6 +9,20 @@ import { OpenIssuesCard } from "../_components/OpenIssuesCard";
 import { HealthCard } from "../_components/HealthCard";
 import { BadgeCard } from "../_components/BadgeCard";
 import { RepoInfoCard } from "../_components/RepoInfoCard";
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/dashboard/[repoId]">): Promise<Metadata> {
+  const { repoId } = await params;
+  const repoIdNum = Number(repoId);
+  if (!Number.isInteger(repoIdNum)) return {};
+
+  const installationIds = await getAccessibleInstallationIds();
+  if (installationIds === null) return {};
+
+  const pet = await getDashboardPet(repoIdNum, installationIds);
+  return { title: pet?.fullName };
+}
 
 export default async function PetDetailPage({
   params,

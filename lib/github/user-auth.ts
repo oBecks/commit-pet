@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { Octokit } from "octokit";
 
@@ -18,12 +19,17 @@ export async function getUserGithubToken(): Promise<string | null> {
 // GitHub connection must be configured with the commit-pet App's own OAuth
 // client id/secret — a generic GitHub OAuth App's token won't resolve any
 // installations here. See docs/adr/008-github-app-auth.md.
-export async function getAccessibleInstallationIds(): Promise<number[] | null> {
-  const token = await getUserGithubToken();
-  if (!token) return null;
+// Wrapped in React's cache() so a route calling this from both
+// generateMetadata and its page component (see app/dashboard/[repoId]/page.tsx)
+// shares one GitHub API round trip per request instead of two.
+export const getAccessibleInstallationIds = cache(
+  async (): Promise<number[] | null> => {
+    const token = await getUserGithubToken();
+    if (!token) return null;
 
-  const octokit = new Octokit({ auth: token });
-  const { data } =
-    await octokit.rest.apps.listInstallationsForAuthenticatedUser();
-  return data.installations.map((installation) => installation.id);
-}
+    const octokit = new Octokit({ auth: token });
+    const { data } =
+      await octokit.rest.apps.listInstallationsForAuthenticatedUser();
+    return data.installations.map((installation) => installation.id);
+  },
+);

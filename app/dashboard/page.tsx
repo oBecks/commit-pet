@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getAccessibleInstallationIds } from "@/lib/github/user-auth";
 import { getDashboardPets } from "@/lib/pets/dashboard-data";
 import { PetCard } from "./_components/PetCard";
+
+export const metadata: Metadata = {
+  title: "Your pets",
+};
 
 export default async function DashboardPage() {
   const installationIds = await getAccessibleInstallationIds();
