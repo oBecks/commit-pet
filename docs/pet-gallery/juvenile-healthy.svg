@@ -6,7 +6,7 @@
 <filter id="softShadow-juvenile-healthy" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#7A2D00" flood-opacity="0.3"/></filter>
 <filter id="groundShadow-juvenile-healthy" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#000000" flood-opacity="0.5"/></filter><path id="tailShapeJuv-juvenile-healthy" d="M 160 250 C 220 300, 280 230, 230 150 C 215 175, 205 210, 155 215 Z" />
 <clipPath id="tailClipJuv-juvenile-healthy"><use href="#tailShapeJuv-juvenile-healthy" /></clipPath></defs>
-<ellipse cx="150" cy="330" rx="48" ry="8" fill="#111115" filter="url(#groundShadow-juvenile-healthy)" />
+<ellipse cx="150" cy="330" rx="48" ry="8" fill="#111115" fill-opacity="0.3" filter="url(#groundShadow-juvenile-healthy)" />
 <g filter="url(#softShadow-juvenile-healthy)">
 <use href="#tailShapeJuv-juvenile-healthy" fill="url(#furGrad-juvenile-healthy)" />
 <path d="M 195 140 Q 215 155 205 175 Q 230 160 225 190 Q 250 180 255 215 L 300 215 L 300 120 L 195 120 Z" fill="url(#bellyGrad-juvenile-healthy)" clip-path="url(#tailClipJuv-juvenile-healthy)" />

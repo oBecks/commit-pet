@@ -6,7 +6,7 @@
 <filter id="softShadow-hatchling-tired" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#7A2D00" flood-opacity="0.3"/></filter>
 <filter id="groundShadow-hatchling-tired" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#000000" flood-opacity="0.5"/></filter><path id="tailShapeBaby-hatchling-tired" d="M 165 260 C 215 295, 245 240, 195 210 C 185 220, 175 240, 165 260 Z" />
 <clipPath id="tailClipBaby-hatchling-tired"><use href="#tailShapeBaby-hatchling-tired" /></clipPath></defs>
-<ellipse cx="150" cy="325" rx="42" ry="7" fill="#111115" filter="url(#groundShadow-hatchling-tired)" />
+<ellipse cx="150" cy="325" rx="42" ry="7" fill="#111115" fill-opacity="0.3" filter="url(#groundShadow-hatchling-tired)" />
 <g filter="url(#softShadow-hatchling-tired)">
 <use href="#tailShapeBaby-hatchling-tired" fill="url(#furGrad-hatchling-tired)" />
 <path d="M 175 215 Q 190 220 185 235 Q 200 225 195 245 Q 215 235 220 255 L 260 255 L 260 180 L 175 180 Z" fill="url(#bellyGrad-hatchling-tired)" clip-path="url(#tailClipBaby-hatchling-tired)" />
@@ -43,7 +43,7 @@
 <ellipse cx="180" cy="165" rx="11" ry="14" fill="#1A1512" />
 <circle cx="176" cy="159" r="4.5" fill="#FFFFFF" />
 </g>
-</g><ellipse cx="118" cy="165" rx="18" ry="22" fill="#C9A072"/>
-<path d="M 102 165 Q 118 170 134 165" stroke="#1A1512" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="182" cy="165" rx="18" ry="22" fill="#C9A072"/>
+</g><ellipse cx="118" cy="165" rx="18" ry="22" fill="url(#furGrad-hatchling-tired)"/>
+<path d="M 102 165 Q 118 170 134 165" stroke="#1A1512" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="182" cy="165" rx="18" ry="22" fill="url(#furGrad-hatchling-tired)"/>
 <path d="M 166 165 Q 182 170 198 165" stroke="#1A1512" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 </svg>

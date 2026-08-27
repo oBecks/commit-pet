@@ -40,7 +40,7 @@ const EGG_LOCAL_DEFS = `<path id="eggShape" d="M150,100 C100,100 75,170 75,235 C
 <clipPath id="eggClip"><use href="#eggShape" /></clipPath>
 <path id="eggTailShape" d="M 60 290 C 130 350, 220 310, 210 180 C 180 230, 130 250, 60 250 Z" />
 <clipPath id="eggTailClip"><use href="#eggTailShape" /></clipPath>`;
-const EGG = `<ellipse cx="150" cy="335" rx="55" ry="9" fill="#111115" filter="url(#groundShadow)" />
+const EGG = `<ellipse cx="150" cy="335" rx="55" ry="9" fill="#111115" fill-opacity="0.3" filter="url(#groundShadow)" />
 <g>
 <use href="#eggShape" fill="url(#furGrad)" />
 <g clip-path="url(#eggClip)">
@@ -56,7 +56,7 @@ const EGG = `<ellipse cx="150" cy="335" rx="55" ry="9" fill="#111115" filter="ur
 const HATCHLING_LOCAL_IDS = ["tailShapeBaby", "tailClipBaby"];
 const HATCHLING_LOCAL_DEFS = `<path id="tailShapeBaby" d="M 165 260 C 215 295, 245 240, 195 210 C 185 220, 175 240, 165 260 Z" />
 <clipPath id="tailClipBaby"><use href="#tailShapeBaby" /></clipPath>`;
-const HATCHLING = `<ellipse cx="150" cy="325" rx="42" ry="7" fill="#111115" filter="url(#groundShadow)" />
+const HATCHLING = `<ellipse cx="150" cy="325" rx="42" ry="7" fill="#111115" fill-opacity="0.3" filter="url(#groundShadow)" />
 <g filter="url(#softShadow)">
 <use href="#tailShapeBaby" fill="url(#furGrad)" />
 <path d="M 175 215 Q 190 220 185 235 Q 200 225 195 245 Q 215 235 220 255 L 260 255 L 260 180 L 175 180 Z" fill="url(#bellyGrad)" clip-path="url(#tailClipBaby)" />
@@ -98,7 +98,7 @@ const HATCHLING = `<ellipse cx="150" cy="325" rx="42" ry="7" fill="#111115" filt
 const JUVENILE_LOCAL_IDS = ["tailShapeJuv", "tailClipJuv"];
 const JUVENILE_LOCAL_DEFS = `<path id="tailShapeJuv" d="M 160 250 C 220 300, 280 230, 230 150 C 215 175, 205 210, 155 215 Z" />
 <clipPath id="tailClipJuv"><use href="#tailShapeJuv" /></clipPath>`;
-const JUVENILE = `<ellipse cx="150" cy="330" rx="48" ry="8" fill="#111115" filter="url(#groundShadow)" />
+const JUVENILE = `<ellipse cx="150" cy="330" rx="48" ry="8" fill="#111115" fill-opacity="0.3" filter="url(#groundShadow)" />
 <g filter="url(#softShadow)">
 <use href="#tailShapeJuv" fill="url(#furGrad)" />
 <path d="M 195 140 Q 215 155 205 175 Q 230 160 225 190 Q 250 180 255 215 L 300 215 L 300 120 L 195 120 Z" fill="url(#bellyGrad)" clip-path="url(#tailClipJuv)" />
@@ -142,7 +142,7 @@ const JUVENILE = `<ellipse cx="150" cy="330" rx="48" ry="8" fill="#111115" filte
 const ADULT_LOCAL_IDS = ["tailShapeAdult", "tailClipAdult"];
 const ADULT_LOCAL_DEFS = `<path id="tailShapeAdult" d="M 175 255 C 245 285, 310 200, 260 120 C 235 150, 220 200, 165 210 Z" />
 <clipPath id="tailClipAdult"><use href="#tailShapeAdult" /></clipPath>`;
-const ADULT = `<ellipse cx="150" cy="335" rx="50" ry="8" fill="#111115" filter="url(#groundShadow)" />
+const ADULT = `<ellipse cx="150" cy="335" rx="50" ry="8" fill="#111115" fill-opacity="0.3" filter="url(#groundShadow)" />
 <g filter="url(#softShadow)">
 <use href="#tailShapeAdult" fill="url(#furGrad)" />
 <path d="M 205 120 Q 225 135 220 160 Q 245 150 245 180 Q 270 170 280 210 L 330 210 L 330 80 L 205 80 Z" fill="url(#bellyGrad)" clip-path="url(#tailClipAdult)" />
@@ -247,15 +247,6 @@ const MOOD_GRADIENTS: Record<
   },
 };
 
-// Flat approximation of furGrad's top stop, for the mood overlay patches
-// below (a gradient can't be sampled at a point, so a solid swatch stands in
-// for "the fur color up near the eyes/mouth").
-const FUR_COLOR: Record<Mood, string> = {
-  healthy: MOOD_GRADIENTS.healthy.furTop,
-  tired: MOOD_GRADIENTS.tired.furTop,
-  sick: MOOD_GRADIENTS.sick.furTop,
-};
-
 // Eye/mouth anchor points, hand-measured from each stage's CONTENT above
 // (all stages share centerX=150), so the mood overlay lines up with the
 // actual art instead of guessing. eyeRx/eyeRy match the actual white-sclera
@@ -309,25 +300,27 @@ const FACE_CENTER_X = 150;
 function moodOverlay(stage: Stage, mood: Mood): string {
   if (stage === "egg" || mood === "healthy") return "";
   const face = FACE[stage];
-  const furColor = FUR_COLOR[mood];
 
   if (mood === "tired") {
-    // Closed, sleepy eyes: a fur-colored ellipse fully covers the eye (sized
-    // from its actual sclera bounds, so nothing peeks out at the edges),
-    // then a shallow downward curve on top reads as a relaxed shut eyelid.
+    // Closed, sleepy eyes: an ellipse fully covers the eye (sized from its
+    // actual sclera bounds, so nothing peeks out at the edges), filled with
+    // the same furGrad the surrounding head uses so it blends in rather than
+    // sitting on top as a flat patch. A shallow downward curve on top reads
+    // as a relaxed shut eyelid. buildPet() scopes this "furGrad" reference
+    // to the instance alongside the rest of CONTENT.
     return face.eyeXs
       .map(
         (x) =>
-          `<ellipse cx="${x}" cy="${face.eyeY}" rx="${face.eyeRx}" ry="${face.eyeRy}" fill="${furColor}"/>
+          `<ellipse cx="${x}" cy="${face.eyeY}" rx="${face.eyeRx}" ry="${face.eyeRy}" fill="url(#furGrad)"/>
 <path d="M ${x - face.eyeRx + 2} ${face.eyeY} Q ${x} ${face.eyeY + 5} ${x + face.eyeRx - 2} ${face.eyeY}" stroke="#1A1512" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
       )
       .join("");
   }
 
-  // Sick: mask the stage's neutral/smiling mouth with a fur-colored patch,
-  // then draw a queasy wavy mouth on top.
+  // Sick: the mouth sits on the cream muzzle patch (bellyGrad), not the fur,
+  // so mask it with bellyGrad too — then draw a queasy wavy mouth on top.
   const cx = FACE_CENTER_X;
-  return `<ellipse cx="${cx}" cy="${face.mouthY - 1}" rx="${face.mouthRx}" ry="${face.mouthRy}" fill="${furColor}"/>
+  return `<ellipse cx="${cx}" cy="${face.mouthY - 1}" rx="${face.mouthRx}" ry="${face.mouthRy}" fill="url(#bellyGrad)"/>
 <path d="M ${cx - face.mouthRx + 1} ${face.mouthY} Q ${cx - face.mouthRx / 2} ${face.mouthY + 4} ${cx} ${face.mouthY} Q ${cx + face.mouthRx / 2} ${face.mouthY - 4} ${cx + face.mouthRx - 1} ${face.mouthY}" stroke="#1A1512" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
 }
 
@@ -346,8 +339,8 @@ function buildPet(
 ): { viewBox: string; defs: string; body: string } {
   const ids = [...SHARED_IDS, ...STAGE_LOCAL_IDS[stage]];
   const defs = scopeIds(sharedDefs(mood) + LOCAL_DEFS[stage], ids, instanceId);
-  const body =
-    scopeIds(CONTENT[stage], ids, instanceId) + moodOverlay(stage, mood);
+  const rawBody = CONTENT[stage] + moodOverlay(stage, mood);
+  const body = scopeIds(rawBody, ids, instanceId);
   return { viewBox: VIEWBOX[stage], defs, body };
 }
 
