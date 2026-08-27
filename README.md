@@ -2,20 +2,22 @@
 
 A little pet that grows as you commit — and gets to retire once your project ships.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **[commit-pet.vercel.app](https://commit-pet.vercel.app)**
 
-<img src="https://commit-pet.vercel.app/api/badge/1346542776" alt="commit-pet badge" width="150" height="220" />
+<img src="https://commit-pet.vercel.app/api/badge/1346542776" alt="commit-pet badge" width="195" height="286" />
 
 ## Install it on your repo
 
 1. **[Install the GitHub App](https://github.com/apps/commit-pet)** and pick the repo(s) you want a pet for.
-2. **Grab your repo's numeric ID** — there's no dashboard yet, so the quickest way is:
+2. **Grab your repo's numeric ID** — sign in with GitHub on [the dashboard](https://commit-pet.vercel.app/dashboard) and open your repo's pet, or fetch it directly:
    ```bash
    curl -s https://api.github.com/repos/<owner>/<repo> | grep -m1 '"id"'
    ```
 3. **Drop the badge in your own README**, swapping in that ID:
    ```md
-   <img src="https://commit-pet.vercel.app/api/badge/<repoId>" alt="commit-pet badge" width="150" height="220" />
+   <img src="https://commit-pet.vercel.app/api/badge/<repoId>" alt="commit-pet badge" width="195" height="286" />
    ```
 
 That's it — every commit from now on feeds your pet.
@@ -43,6 +45,32 @@ Every repo with commit-pet installed gets its own pet, tied to that repo's activ
 - **Deployed phase** — entered once a release is published (or an agent explicitly marks it deployed via MCP). The pet stops needing commits and instead gets **sick** if the repo has open issues.
 
 The badge above is a live, embeddable SVG (`/api/badge/[repoId]`) — same backend, same pet state, just a different view than the eventual dashboard.
+
+## Dashboard
+
+Sign in with GitHub on [the dashboard](https://commit-pet.vercel.app/dashboard) to see every repo you have commit-pet installed on, in one place — the same live pet state as the badge, plus each repo's numeric ID for badge setup and its **MCP access** card for generating a token (see below).
+
+Sign-in only resolves which of your repos you can see (via a live GitHub API call); no separate account or membership list is stored.
+
+## MCP access
+
+Let a coding agent (Claude Code, Cursor, etc.) see and update your pet directly from your repo's checkout — check status, mark deployed, or mark an issue fixed — instead of only reacting to webhooks.
+
+1. Open your repo's dashboard page (`commit-pet.vercel.app/dashboard/<repoId>`) and generate an MCP token from the **MCP access** card. It's shown once, so copy it right away — regenerating revokes the old one.
+2. Configure your MCP client with that token as a bearer token, pointed at:
+   ```text
+   https://commit-pet.vercel.app/api/mcp
+   ```
+
+Each token is scoped to exactly one repo, so an agent can only ever see and control the pet for the repo it was configured for. Available tools:
+
+| Tool               | Description                                                                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------|
+| `get_pet_status`    | Get the pet's phase (development/deployed), health, mood, growth stage, XP, and open issue count.                            |
+| `mark_deployed`     | Mark the pet as deployed, entering the deployed phase. Idempotent.                                                            |
+| `mark_issue_fixed`  | Tell the pet an issue was fixed, decrementing its open issue count by one — independent of GitHub's own issue tracker.       |
+
+See [ADR-007](docs/adr/007-mcp-scope.md) for why the MCP server exposes full pet-state control rather than just deployment marking, and [ADR-014](docs/adr/014-mcp-repo-token-auth.md) for the token auth model.
 
 ## Workflow
 
