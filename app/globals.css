@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Slots Clerk's injected styles (cssLayerName: "clerk" in
+   app/_components/clerk-appearance.ts) between base and components, so our
+   Tailwind utility overrides in the `elements` config still win. */
+@layer theme, base, clerk, components, utilities;
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
