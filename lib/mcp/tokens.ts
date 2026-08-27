@@ -53,12 +53,17 @@ export async function getRepoIdForToken(
 // stats for. The caller (app/api/mcp/route.ts) schedules this with Next's
 // after() so it can still finish once the response has been sent, which a
 // bare fire-and-forget call can't guarantee on a serverless platform.
-export async function touchTokenLastUsed(repoId: number): Promise<void> {
+//
+// Matches by tokenHash (unique), not repoId: if the token were regenerated in
+// the gap between auth and this callback firing, matching by repoId would
+// stamp the *new* token's row for a request that actually authenticated with
+// the old one.
+export async function touchTokenLastUsed(rawToken: string): Promise<void> {
   try {
     await db
       .update(mcpTokens)
       .set({ lastUsedAt: new Date() })
-      .where(eq(mcpTokens.repoId, repoId));
+      .where(eq(mcpTokens.tokenHash, hashToken(rawToken)));
   } catch (err) {
     console.error("Failed to update mcp token lastUsedAt", err);
   }

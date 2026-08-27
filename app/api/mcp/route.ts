@@ -112,7 +112,7 @@ const verifyToken = async (
   const repoId = await getRepoIdForToken(bearerToken);
   if (repoId === null) return undefined;
 
-  after(() => touchTokenLastUsed(repoId));
+  after(() => touchTokenLastUsed(bearerToken));
 
   return {
     token: bearerToken,
