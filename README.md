@@ -2,6 +2,8 @@
 
 A little pet that grows as you commit — and gets to retire once your project ships.
 
+**[commit-pet.vercel.app](https://commit-pet.vercel.app)**
+
 <img src="https://commit-pet.vercel.app/api/badge/1346542776" alt="commit-pet badge" width="150" height="220" />
 
 ## Install it on your repo
