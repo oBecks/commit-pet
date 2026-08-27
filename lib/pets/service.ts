@@ -63,8 +63,10 @@ export async function upsertRepo(
 }
 
 export async function removeRepo(repoId: number) {
-  // Pet row cascades via FK in a future migration if we add ON DELETE CASCADE;
-  // for now delete explicitly to keep behavior obvious.
+  // Pet row cascades via FK in a future migration if we add ON DELETE
+  // CASCADE; for now delete explicitly to keep behavior obvious. mcpTokens
+  // already has ON DELETE CASCADE (lib/db/schema.ts), so the repos delete
+  // below cleans that up on its own.
   await db.delete(pets).where(eq(pets.repoId, repoId));
   await db.delete(repos).where(eq(repos.id, repoId));
 }
@@ -124,8 +126,10 @@ export async function recordCommit(repoId: number, commitCount: number) {
 }
 
 // Release published (or an explicit MCP deploy call): enter the deployed
-// phase. See docs/adr/004-deployment-signal.md.
-export async function markDeployed(repoId: number) {
+// phase. See docs/adr/004-deployment-signal.md. Returns whether a pet row was
+// actually updated, so callers (the MCP tool) can distinguish "did it" from
+// "there's no pet for this repo."
+export async function markDeployed(repoId: number): Promise<boolean> {
   // sick is derived from open_issue_count within this same UPDATE, rather
   // than from a separately-read pet object, so a concurrent issue webhook
   // for the same repo can't have its write clobbered by this one (or vice
@@ -148,6 +152,7 @@ export async function markDeployed(repoId: number) {
       `markDeployed: no pet for repo ${repoId}, deploy event dropped`,
     );
   }
+  return updated.length > 0;
 }
 
 // Issues opened/closed: only affects Sick status once a pet is deployed.
@@ -180,6 +185,31 @@ export async function setOpenIssueCount(
 // decision after a repo's visibility changes post-install.
 export async function setRepoPrivate(repoId: number, isPrivate: boolean) {
   await db.update(repos).set({ isPrivate }).where(eq(repos.id, repoId));
+}
+
+// Agent-reported fix, via the MCP tool (docs/adr/007-mcp-scope.md) — distinct
+// from setOpenIssueCount, which mirrors GitHub's own issue-tracker count.
+// This just decrements by one: an agent calling this isn't necessarily
+// closing a tracked GitHub issue, so it's a coarser, independent correction
+// rather than an attempt to stay in sync with GitHub's count. Returns whether
+// a pet row was actually updated, same reasoning as markDeployed above.
+export async function markIssueFixed(repoId: number): Promise<boolean> {
+  // sick derived from the post-decrement count within this same UPDATE, same
+  // reasoning as markDeployed/setOpenIssueCount above.
+  const updated = await db
+    .update(pets)
+    .set({
+      openIssueCount: sql`GREATEST(${pets.openIssueCount} - 1, 0)`,
+      sick: sql`${pets.phase} = 'deployed' AND GREATEST(${pets.openIssueCount} - 1, 0) > 0`,
+      updatedAt: new Date(),
+    })
+    .where(eq(pets.repoId, repoId))
+    .returning({ id: pets.id });
+
+  if (updated.length === 0) {
+    console.warn(`markIssueFixed: no pet for repo ${repoId}`);
+  }
+  return updated.length > 0;
 }
 
 export async function getRepoById(repoId: number) {

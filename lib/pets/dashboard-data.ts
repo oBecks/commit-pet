@@ -122,7 +122,9 @@ function toDashboardPet(row: PetRow): DashboardPet {
   };
 }
 
-function relativeTime(date: Date): string {
+// Exported for lib/mcp/tokens.ts, which formats a token's last-used time the
+// same way the rest of the Dashboard formats timestamps.
+export function relativeTime(date: Date): string {
   const minutes = Math.floor((Date.now() - date.getTime()) / 60_000);
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes}m ago`;

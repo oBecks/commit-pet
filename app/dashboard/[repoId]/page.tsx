@@ -3,12 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAccessibleInstallationIds } from "@/lib/github/user-auth";
 import { getDashboardPet } from "@/lib/pets/dashboard-data";
+import { getMcpTokenStatus } from "@/lib/mcp/tokens";
 import { Hero } from "../_components/Hero";
 import { GrowthCard } from "../_components/GrowthCard";
 import { OpenIssuesCard } from "../_components/OpenIssuesCard";
 import { HealthCard } from "../_components/HealthCard";
 import { BadgeCard } from "../_components/BadgeCard";
 import { RepoInfoCard } from "../_components/RepoInfoCard";
+import { McpTokenCard } from "../_components/McpTokenCard";
 
 export async function generateMetadata({
   params,
@@ -41,6 +43,8 @@ export default async function PetDetailPage({
   const pet = await getDashboardPet(repoIdNum, installationIds);
   if (!pet) notFound();
 
+  const tokenStatus = await getMcpTokenStatus(repoIdNum);
+
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-8 sm:px-12">
       <div className="flex items-center gap-2 text-[13px]">
@@ -67,6 +71,11 @@ export default async function PetDetailPage({
         <div className="flex w-full flex-col gap-6 lg:w-auto lg:flex-1">
           <HealthCard pet={pet} />
           <BadgeCard pet={pet} />
+          <McpTokenCard
+            repoId={pet.repoId}
+            hasToken={tokenStatus.exists}
+            lastUsedRelative={tokenStatus.lastUsedRelative}
+          />
           <RepoInfoCard pet={pet} />
         </div>
       </div>

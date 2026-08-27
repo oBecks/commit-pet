@@ -33,6 +33,24 @@ export const repos = pgTable("repos", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// At most one row per repo — generating a new token overwrites the row in
+// place (via onConflictDoUpdate on repoId), which is what "revokes" the
+// previous token: its hash is simply no longer stored anywhere to match
+// against. No separate revoked_at/history tracking, since nothing reads old
+// tokens once they're gone. See docs/adr/014-mcp-repo-token-auth.md.
+export const mcpTokens = pgTable("mcp_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  repoId: bigint("repo_id", { mode: "number" })
+    .notNull()
+    .unique()
+    .references(() => repos.id, { onDelete: "cascade" }),
+  // SHA-256 hex digest of the raw token — the raw value is shown once at
+  // generation time and never stored.
+  tokenHash: text("token_hash").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastUsedAt: timestamp("last_used_at"),
+});
+
 // One row per pet, 1:1 with repos. See docs/adr/003, 004, 005.
 export const pets = pgTable("pets", {
   id: uuid("id").primaryKey().defaultRandom(),
