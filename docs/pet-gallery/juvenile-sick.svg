@@ -45,6 +45,6 @@
 <ellipse cx="173" cy="132" rx="8" ry="11" fill="#1A1512" />
 <circle cx="170" cy="127" r="3" fill="#FFFFFF" />
 </g>
-</g><ellipse cx="150" cy="171" rx="6" ry="3" fill="url(#bellyGrad-juvenile-sick)"/>
+</g><ellipse cx="150" cy="171" rx="6" ry="3" fill="#D9D3A8"/>
 <path d="M 145 172 Q 147 176 150 172 Q 153 168 155 172" stroke="#1A1512" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 </svg>

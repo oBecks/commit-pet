@@ -317,10 +317,16 @@ function moodOverlay(stage: Stage, mood: Mood): string {
       .join("");
   }
 
-  // Sick: the mouth sits on the cream muzzle patch (bellyGrad), not the fur,
-  // so mask it with bellyGrad too — then draw a queasy wavy mouth on top.
+  // Sick: the mouth sits on the cream muzzle patch, not the fur, so mask it
+  // with a cream swatch too — then draw a queasy wavy mouth on top. A flat
+  // color rather than url(#bellyGrad): that gradient has no gradientUnits,
+  // so it defaults to objectBoundingBox and is computed per-shape — this
+  // small patch and the much larger muzzle ellipse it sits on would each
+  // independently map 0%-100% across their own bounding box, producing two
+  // different gradient sweeps and a visible seam where they overlap.
   const cx = FACE_CENTER_X;
-  return `<ellipse cx="${cx}" cy="${face.mouthY - 1}" rx="${face.mouthRx}" ry="${face.mouthRy}" fill="url(#bellyGrad)"/>
+  const muzzleColor = MOOD_GRADIENTS[mood].bellyBottom;
+  return `<ellipse cx="${cx}" cy="${face.mouthY - 1}" rx="${face.mouthRx}" ry="${face.mouthRy}" fill="${muzzleColor}"/>
 <path d="M ${cx - face.mouthRx + 1} ${face.mouthY} Q ${cx - face.mouthRx / 2} ${face.mouthY + 4} ${cx} ${face.mouthY} Q ${cx + face.mouthRx / 2} ${face.mouthY - 4} ${cx + face.mouthRx - 1} ${face.mouthY}" stroke="#1A1512" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
 }
 

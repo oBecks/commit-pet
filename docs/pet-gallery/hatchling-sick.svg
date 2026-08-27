@@ -43,6 +43,6 @@
 <ellipse cx="180" cy="165" rx="11" ry="14" fill="#1A1512" />
 <circle cx="176" cy="159" r="4.5" fill="#FFFFFF" />
 </g>
-</g><ellipse cx="150" cy="204" rx="6" ry="3" fill="url(#bellyGrad-hatchling-sick)"/>
+</g><ellipse cx="150" cy="204" rx="6" ry="3" fill="#D9D3A8"/>
 <path d="M 145 205 Q 147 209 150 205 Q 153 201 155 205" stroke="#1A1512" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 </svg>
