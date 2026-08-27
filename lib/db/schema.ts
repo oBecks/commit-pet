@@ -59,6 +59,12 @@ export const pets = pgTable("pets", {
     .unique()
     .references(() => repos.id),
   phase: phaseEnum("phase").notNull().default("development"),
+  // Set once, on the development -> deployed transition, and never
+  // overwritten again — the exact "deployed X ago" signal for the dashboard
+  // (lib/pets/dashboard-data.ts). Deliberately distinct from updatedAt, which
+  // keeps moving on every later touch (repeat idempotent markDeployed calls,
+  // issue-count changes post-deploy, etc). See docs/adr/004-deployment-signal.md.
+  deployedAt: timestamp("deployed_at"),
   // Health as of lastCommitAt; decay since then is computed on read, not stored.
   // See lib/pets/health.ts and docs/open-questions.md.
   health: integer("health").notNull().default(100),

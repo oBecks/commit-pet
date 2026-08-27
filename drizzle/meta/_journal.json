@@ -36,6 +36,13 @@
       "when": 1787836516208,
       "tag": "0004_condemned_kronos",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787840972706,
+      "tag": "0005_early_deathstrike",
+      "breakpoints": true
     }
   ]
 }

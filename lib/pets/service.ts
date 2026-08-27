@@ -134,11 +134,20 @@ export async function markDeployed(repoId: number): Promise<boolean> {
   // than from a separately-read pet object, so a concurrent issue webhook
   // for the same repo can't have its write clobbered by this one (or vice
   // versa) — see the review discussion on PR #3.
+  //
+  // deployedAt is set via COALESCE within this same UPDATE (not read-then-
+  // write) so it's populated once, on the actual development -> deployed
+  // transition, and left untouched on every subsequent call. The MCP
+  // mark_deployed tool is documented as idempotent and can be called
+  // repeatedly for an already-deployed pet — without this, a plain
+  // `new Date()` here would reset the dashboard's "deployed X ago" display
+  // to "just now" on every repeat call even though nothing changed.
   const updated = await db
     .update(pets)
     .set({
       phase: "deployed",
       sick: sql`${pets.openIssueCount} > 0`,
+      deployedAt: sql`COALESCE(${pets.deployedAt}, now())`,
       updatedAt: new Date(),
     })
     .where(eq(pets.repoId, repoId))
