@@ -36,7 +36,7 @@ type PetRow = {
   lastCommitAt: Date | null;
   sick: boolean;
   openIssueCount: number;
-  updatedAt: Date;
+  deployedAt: Date | null;
 };
 
 const PET_ROW_COLUMNS = {
@@ -50,7 +50,7 @@ const PET_ROW_COLUMNS = {
   lastCommitAt: pets.lastCommitAt,
   sick: pets.sick,
   openIssueCount: pets.openIssueCount,
-  updatedAt: pets.updatedAt,
+  deployedAt: pets.deployedAt,
 } as const;
 
 // Every pet visible to a signed-in user, across every installation they can
@@ -113,11 +113,14 @@ function toDashboardPet(row: PetRow): DashboardPet {
     lastCommitRelative: row.lastCommitAt
       ? relativeTime(row.lastCommitAt)
       : null,
-    // No dedicated deployedAt column yet — updatedAt is a best-effort stand-in,
-    // exact for the common case (no issue-count changes after deploying) but
-    // can drift since setOpenIssueCount() also bumps updatedAt post-deploy.
+    // deployedAt is set once, on the development -> deployed transition, and
+    // never overwritten again (see markDeployed in lib/pets/service.ts) — so
+    // this stays exact regardless of later touches like issue-count changes
+    // or repeat idempotent markDeployed calls.
     deployedRelative:
-      row.phase === "deployed" ? relativeTime(row.updatedAt) : null,
+      row.phase === "deployed" && row.deployedAt
+        ? relativeTime(row.deployedAt)
+        : null,
     installedOn: formatInstalledOn(row.installedAt),
   };
 }
