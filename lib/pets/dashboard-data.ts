@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { repos, pets } from "@/lib/db/schema";
@@ -72,23 +73,32 @@ export async function getDashboardPets(
 // Scoped by `installationIds` so a user can't view another user's repo by
 // guessing its numeric id — this is the authorization boundary for the pet
 // detail page, not just a lookup.
-export async function getDashboardPet(
-  repoId: number,
-  installationIds: number[],
-): Promise<DashboardPet | null> {
-  if (installationIds.length === 0) return null;
+//
+// Wrapped in React's cache() so the pet detail route calling this from both
+// generateMetadata and its page component (app/dashboard/[repoId]/page.tsx)
+// shares one query per request instead of two.
+export const getDashboardPet = cache(
+  async (
+    repoId: number,
+    installationIds: number[],
+  ): Promise<DashboardPet | null> => {
+    if (installationIds.length === 0) return null;
 
-  const [row] = await db
-    .select(PET_ROW_COLUMNS)
-    .from(repos)
-    .innerJoin(pets, eq(pets.repoId, repos.id))
-    .where(
-      and(eq(repos.id, repoId), inArray(repos.installationId, installationIds)),
-    )
-    .limit(1);
+    const [row] = await db
+      .select(PET_ROW_COLUMNS)
+      .from(repos)
+      .innerJoin(pets, eq(pets.repoId, repos.id))
+      .where(
+        and(
+          eq(repos.id, repoId),
+          inArray(repos.installationId, installationIds),
+        ),
+      )
+      .limit(1);
 
-  return row ? toDashboardPet(row) : null;
-}
+    return row ? toDashboardPet(row) : null;
+  },
+);
 
 function toDashboardPet(row: PetRow): DashboardPet {
   return {
