@@ -4,7 +4,13 @@ import { useRef, useState } from "react";
 
 type Status = "idle" | "copied" | "error";
 
-export function CopyButton({ text }: { text: string }) {
+export function CopyButton({
+  text,
+  label = "Copy markdown",
+}: {
+  text: string;
+  label?: string;
+}) {
   const [status, setStatus] = useState<Status>("idle");
   const resetTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pending = useRef(false);
@@ -49,7 +55,7 @@ export function CopyButton({ text }: { text: string }) {
         ? "Copied!"
         : status === "error"
           ? "Couldn't copy"
-          : "Copy markdown"}
+          : label}
     </button>
   );
 }
