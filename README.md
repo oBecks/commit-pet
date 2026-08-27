@@ -20,6 +20,19 @@ That's it — every commit from now on feeds your pet.
 
 > **Note:** only public repos are supported right now — private repos 404 on the badge endpoint ([ADR-011](docs/adr/011-private-repo-badges-blocked.md)).
 
+## Pet gallery
+
+Your pet grows through four stages as XP accumulates, and its mood tints its colors based on repo health:
+
+|               | Healthy                                                                                  | Tired                                                                                | Sick                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| **Egg**       | <img src="docs/pet-gallery/egg-healthy.svg" width="90" alt="egg, healthy" />             | <img src="docs/pet-gallery/egg-tired.svg" width="90" alt="egg, tired" />             | <img src="docs/pet-gallery/egg-sick.svg" width="90" alt="egg, sick" />             |
+| **Hatchling** | <img src="docs/pet-gallery/hatchling-healthy.svg" width="90" alt="hatchling, healthy" /> | <img src="docs/pet-gallery/hatchling-tired.svg" width="90" alt="hatchling, tired" /> | <img src="docs/pet-gallery/hatchling-sick.svg" width="90" alt="hatchling, sick" /> |
+| **Juvenile**  | <img src="docs/pet-gallery/juvenile-healthy.svg" width="90" alt="juvenile, healthy" />   | <img src="docs/pet-gallery/juvenile-tired.svg" width="90" alt="juvenile, tired" />   | <img src="docs/pet-gallery/juvenile-sick.svg" width="90" alt="juvenile, sick" />   |
+| **Adult**     | <img src="docs/pet-gallery/adult-healthy.svg" width="90" alt="adult, healthy" />         | <img src="docs/pet-gallery/adult-tired.svg" width="90" alt="adult, tired" />         | <img src="docs/pet-gallery/adult-sick.svg" width="90" alt="adult, sick" />         |
+
+Tired means health has dropped low; sick means the repo has open issues once it's deployed (see "How it works" below). These images are generated straight from the same art in [lib/pets/render.ts](lib/pets/render.ts) via `pnpm dlx tsx scripts/generate-pet-gallery.ts` — rerun that after any art change to keep this table in sync.
+
 ## How it works
 
 Every repo with commit-pet installed gets its own pet, tied to that repo's activity:
