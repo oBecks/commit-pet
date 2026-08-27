@@ -43,7 +43,7 @@ export const mcpTokens = pgTable("mcp_tokens", {
   repoId: bigint("repo_id", { mode: "number" })
     .notNull()
     .unique()
-    .references(() => repos.id),
+    .references(() => repos.id, { onDelete: "cascade" }),
   // SHA-256 hex digest of the raw token — the raw value is shown once at
   // generation time and never stored.
   tokenHash: text("token_hash").notNull().unique(),

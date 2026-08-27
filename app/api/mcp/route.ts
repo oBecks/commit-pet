@@ -1,6 +1,7 @@
 import type { AuthInfo } from "@modelcontextprotocol/server";
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
-import { getRepoIdForToken } from "@/lib/mcp/tokens";
+import { after } from "next/server";
+import { getRepoIdForToken, touchTokenLastUsed } from "@/lib/mcp/tokens";
 import { currentHealth } from "@/lib/pets/health";
 import { moodFor } from "@/lib/pets/mood";
 import { stageForXp } from "@/lib/pets/growth";
@@ -65,7 +66,13 @@ const handler = createMcpHandler(
       },
       async (ctx) => {
         const repoId = requireRepoId(ctx.http?.authInfo);
-        await markDeployed(repoId);
+        const updated = await markDeployed(repoId);
+        if (!updated) {
+          return {
+            content: [{ type: "text", text: "No pet found for this repo." }],
+            isError: true,
+          };
+        }
         return { content: [{ type: "text", text: "Marked deployed." }] };
       },
     );
@@ -79,7 +86,13 @@ const handler = createMcpHandler(
       },
       async (ctx) => {
         const repoId = requireRepoId(ctx.http?.authInfo);
-        await markIssueFixed(repoId);
+        const updated = await markIssueFixed(repoId);
+        if (!updated) {
+          return {
+            content: [{ type: "text", text: "No pet found for this repo." }],
+            isError: true,
+          };
+        }
         return { content: [{ type: "text", text: "Marked one issue fixed." }] };
       },
     );
@@ -98,6 +111,8 @@ const verifyToken = async (
 
   const repoId = await getRepoIdForToken(bearerToken);
   if (repoId === null) return undefined;
+
+  after(() => touchTokenLastUsed(repoId));
 
   return {
     token: bearerToken,

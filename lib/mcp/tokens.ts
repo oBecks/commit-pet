@@ -35,9 +35,7 @@ export async function generateMcpToken(repoId: number): Promise<string> {
 }
 
 // Resolves a bearer token to the repo it authorizes, or null if it doesn't
-// match any stored token. Called on every MCP request, so it also stamps
-// lastUsedAt — best-effort (not awaited by the caller's response) since a
-// failed write here shouldn't fail the request it's just bookkeeping for.
+// match any stored token.
 export async function getRepoIdForToken(
   rawToken: string,
 ): Promise<number | null> {
@@ -47,16 +45,23 @@ export async function getRepoIdForToken(
     .where(eq(mcpTokens.tokenHash, hashToken(rawToken)))
     .limit(1);
 
-  if (!row) return null;
+  return row?.repoId ?? null;
+}
 
-  db.update(mcpTokens)
-    .set({ lastUsedAt: new Date() })
-    .where(eq(mcpTokens.repoId, row.repoId))
-    .catch((err) =>
-      console.error("Failed to update mcp token lastUsedAt", err),
-    );
-
-  return row.repoId;
+// Bookkeeping only, deliberately not awaited by the request that resolved the
+// token — a failed write here shouldn't fail the MCP call it's just recording
+// stats for. The caller (app/api/mcp/route.ts) schedules this with Next's
+// after() so it can still finish once the response has been sent, which a
+// bare fire-and-forget call can't guarantee on a serverless platform.
+export async function touchTokenLastUsed(repoId: number): Promise<void> {
+  try {
+    await db
+      .update(mcpTokens)
+      .set({ lastUsedAt: new Date() })
+      .where(eq(mcpTokens.repoId, repoId));
+  } catch (err) {
+    console.error("Failed to update mcp token lastUsedAt", err);
+  }
 }
 
 export async function getMcpTokenStatus(
