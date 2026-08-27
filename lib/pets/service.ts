@@ -80,8 +80,10 @@ export async function recordCommit(repoId: number, commitCount: number) {
 
   // True when lastCommitAt falls on the same UTC calendar day as now() —
   // shared between commitsToday (below) and the xp expression so a commit
-  // that starts a new day resets both consistently.
-  const sameDay = sql`${pets.lastCommitAt} IS NOT NULL AND date_trunc('day', ${pets.lastCommitAt}) = date_trunc('day', now())`;
+  // that starts a new day resets both consistently. `now() AT TIME ZONE
+  // 'UTC'` (not bare now()) so the day boundary is pinned to UTC regardless
+  // of the DB session's TimeZone setting.
+  const sameDay = sql`${pets.lastCommitAt} IS NOT NULL AND date_trunc('day', ${pets.lastCommitAt}) = date_trunc('day', now() AT TIME ZONE 'UTC')`;
 
   // Re-checks phase in the WHERE clause (not just the read above) so a
   // concurrent markDeployed() can't leave a stale commit landing after the

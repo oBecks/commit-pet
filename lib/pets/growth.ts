@@ -2,7 +2,7 @@
 // each subsequent commit that same day is worth XP_DECAY_RATE times the
 // previous one's value. This is the sole capping mechanism — no separate
 // hard daily cutoff — because a geometric series converges on its own: the
-// asymptotic ceiling is BASE_XP_PER_COMMIT / (1 - XP_DECAY_RATE) = 20 XP/day,
+// asymptotic ceiling is BASE_XP_PER_COMMIT / (1 - XP_DECAY_RATE) = 200 XP/day,
 // unreachable in practice but approached within a handful of commits. XP
 // only accrues from commits during the development phase (freezes at
 // Deploy); deploy-triggered growth or branching evolutions are future work.

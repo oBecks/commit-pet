@@ -16,14 +16,14 @@ XP still comes from commits only, and still only during the Development phase â€
 
 Within a push, each commit is worth less than the one before it **on the same UTC calendar day**:
 
-```
+```text
 BASE_XP_PER_COMMIT = 30   // 1st commit of the UTC day
 XP_DECAY_RATE = 0.85      // each subsequent commit that day is worth 85% of the previous one
 ```
 
 The XP for a push of `k` commits, when `n` commits already landed earlier that day, is the closed-form sum of that geometric sequence:
 
-```
+```text
 xp = BASE_XP_PER_COMMIT * XP_DECAY_RATE^n * (1 - XP_DECAY_RATE^k) / (1 - XP_DECAY_RATE)
 ```
 
