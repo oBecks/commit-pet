@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { regenerateMcpToken } from "../[repoId]/actions";
 import { CopyButton } from "./CopyButton";
 
@@ -16,12 +17,20 @@ export function McpTokenCard({
   const [token, setToken] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
+  const router = useRouter();
 
   async function handleGenerate() {
     setPending(true);
     setError(false);
     try {
       setToken(await regenerateMcpToken(Number(repoId)));
+      // hasToken/lastUsedRelative are a server-fetched snapshot (see
+      // PetsSection in app/dashboard/page.tsx) — without this, they'd stay
+      // stale for the rest of the session. Doesn't affect what's on screen
+      // right now (the reveal below reads local `token` state, not the
+      // prop), but it means swiping away and back in the carousel won't
+      // show "No token generated yet" for a pet that already has one.
+      router.refresh();
     } catch {
       setError(true);
     } finally {

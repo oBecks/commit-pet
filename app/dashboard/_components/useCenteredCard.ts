@@ -31,9 +31,13 @@ export function useCenteredCard(initialId: string | undefined) {
 
     // observe() itself fires an initial callback with every element at
     // once — on a wide viewport where nothing needs to scroll, they all tie
-    // at ratio 1, and picking a "winner" from a tie is unstable. Skip that
-    // first batch entirely so the initial selection stands until the user
-    // actually scrolls the strip.
+    // at ratio 1. Deliberately not running the geometry-based tie-break on
+    // this batch: for an even number of fully-visible cards, "closest to
+    // container center" has no unique answer (two cards are equidistant),
+    // so it would pick one arbitrarily instead of honoring `initialId`.
+    // Skipping this batch keeps the initial selection stable until the user
+    // actually scrolls the strip, which is the one thing "closest to
+    // center" can't be ambiguous about.
     let isInitialBatch = true;
 
     const observer = new IntersectionObserver(
