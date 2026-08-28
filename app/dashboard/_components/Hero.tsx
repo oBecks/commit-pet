@@ -10,7 +10,7 @@ const PHASE_BLURB: Record<
 > = {
   development: () => "In development — every commit feeds this pet.",
   deployed: (pet) =>
-    `Deployed ${pet.deployedRelative} — stopped needing commits, now watches for open issues instead.`,
+    `Deployed${pet.deployedRelative ? ` ${pet.deployedRelative}` : ""} — stopped needing commits, now watches for open issues instead.`,
 };
 
 export function Hero({ pet }: { pet: DashboardPet }) {

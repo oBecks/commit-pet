@@ -59,7 +59,9 @@ export function PetCard({ pet }: { pet: DashboardPet }) {
         <Bar progress={progress} fillClassName={XP_BAR_FILL[mood]} />
         <div className="mt-1.5 text-center text-xs text-dash-muted">
           {pet.phase === "deployed"
-            ? `Deployed ${pet.deployedRelative}`
+            ? pet.deployedRelative
+              ? `Deployed ${pet.deployedRelative}`
+              : "Deployed"
             : progressLabel}
         </div>
       </div>
