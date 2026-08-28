@@ -22,8 +22,9 @@ export function PetsCarousel({
   tokenStatuses: Record<string, McpTokenStatus>;
 }) {
   const [firstPet] = pets;
-  const { centeredId, containerRef, register, setCenteredId } =
-    useCenteredCard(firstPet?.repoId);
+  const { centeredId, containerRef, register, setCenteredId } = useCenteredCard(
+    firstPet?.repoId,
+  );
 
   // The dashboard only renders this component once it already knows there's
   // at least one pet (see PetsSection in app/dashboard/page.tsx) — this is
