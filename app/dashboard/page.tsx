@@ -15,7 +15,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-7 px-6 py-10 sm:px-12 sm:py-10">
-      <div className={fadeUp()}>
+      <div {...fadeUp()}>
         <h1 className="mb-1.5 text-2xl font-bold text-dash-heading sm:text-[26px]">
           Your pets
         </h1>
@@ -53,12 +53,21 @@ async function PetsSection({ installationIds }: { installationIds: number[] }) {
 
   // One extra query per pet — fine at the handful-of-repos scale this
   // dashboard runs at. Keyed by repoId so PetsCarousel can look up whichever
-  // pet is currently selected without re-fetching on every swipe.
+  // pet is currently selected without re-fetching on every swipe. Failures
+  // are caught per-pet: a DB hiccup on one repo's token lookup shouldn't
+  // take down the "no token" default for every other pet on the page.
   const tokenStatusEntries = await Promise.all(
-    pets.map(async (pet): Promise<[string, McpTokenStatus]> => [
-      pet.repoId,
-      await getMcpTokenStatus(Number(pet.repoId)),
-    ]),
+    pets.map(async (pet): Promise<[string, McpTokenStatus]> => {
+      try {
+        return [pet.repoId, await getMcpTokenStatus(Number(pet.repoId))];
+      } catch (err) {
+        console.error(
+          `Failed to load MCP token status for repo ${pet.repoId}`,
+          err,
+        );
+        return [pet.repoId, { exists: false, lastUsedRelative: null }];
+      }
+    }),
   );
   const tokenStatuses = Object.fromEntries(tokenStatusEntries);
 

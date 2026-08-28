@@ -43,7 +43,9 @@ export default async function PetDetailPage({
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-8 sm:px-12">
-      <div className={`flex items-center gap-2 text-[13px] ${fadeUp()}`}>
+      <div
+        className={`flex items-center gap-2 text-[13px] ${fadeUp().className}`}
+      >
         <Link
           href="/dashboard"
           className="font-semibold text-dash-accent hover:text-[#C2560B]"

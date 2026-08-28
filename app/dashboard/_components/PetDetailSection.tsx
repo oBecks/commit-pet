@@ -11,7 +11,7 @@ import { McpTokenCard } from "./McpTokenCard";
 
 // The Hero/Growth-or-Issues/Health/Badge/MCP/Repo layout for one pet — used
 // both by the standalone /dashboard/[repoId] page and by PetsCarousel's
-// inline detail view, so the layout only has to be got right once.
+// inline detail view, so the layout only needs to be correct once.
 export function PetDetailSection({
   pet,
   tokenStatus,
@@ -22,10 +22,10 @@ export function PetDetailSection({
   return (
     <div className="flex flex-col items-start gap-6 lg:flex-row">
       <div className="flex min-w-0 flex-1 flex-col gap-6 lg:flex-[2]">
-        <div className={fadeUp(40)}>
+        <div {...fadeUp(40)}>
           <Hero pet={pet} />
         </div>
-        <div className={fadeUp(80)}>
+        <div {...fadeUp(80)}>
           {pet.phase === "development" ? (
             <GrowthCard pet={pet} />
           ) : (
@@ -35,20 +35,20 @@ export function PetDetailSection({
       </div>
 
       <div className="flex w-full flex-col gap-6 lg:w-auto lg:flex-1">
-        <div className={fadeUp(120)}>
+        <div {...fadeUp(120)}>
           <HealthCard pet={pet} />
         </div>
-        <div className={fadeUp(160)}>
+        <div {...fadeUp(160)}>
           <BadgeCard pet={pet} />
         </div>
-        <div className={fadeUp(200)}>
+        <div {...fadeUp(200)}>
           <McpTokenCard
             repoId={pet.repoId}
             hasToken={tokenStatus.exists}
             lastUsedRelative={tokenStatus.lastUsedRelative}
           />
         </div>
-        <div className={fadeUp(240)}>
+        <div {...fadeUp(240)}>
           <RepoInfoCard pet={pet} />
         </div>
       </div>

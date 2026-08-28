@@ -6,7 +6,7 @@ import { fadeUp } from "@/lib/ui/motion";
 export function Nav() {
   return (
     <div
-      className={`flex h-[72px] shrink-0 items-center justify-between border-b border-dash-border bg-dash-card px-6 sm:px-12 ${fadeUp()}`}
+      className={`flex h-[72px] shrink-0 items-center justify-between border-b border-dash-border bg-dash-card px-6 sm:px-12 ${fadeUp().className}`}
     >
       <Link
         href="/dashboard"

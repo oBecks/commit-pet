@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import type { Stage } from "@/lib/pets/growth";
 import { PetArt } from "@/app/dashboard/_components/PetArt";
 import { fadeUp } from "@/lib/ui/motion";
@@ -82,6 +82,8 @@ function StageStrip({
 // page for signed-out visitors, since "/" redirects straight here instead of
 // showing separate marketing content.
 export function AuthBrandPanel() {
+  const headline = fadeUp(80);
+
   return (
     <div className="relative hidden flex-col justify-center gap-12 overflow-hidden border-r border-dash-border bg-gradient-to-br from-dash-card to-dash-bg px-16 py-16 lg:flex">
       <div
@@ -90,14 +92,17 @@ export function AuthBrandPanel() {
       />
 
       <div className="mx-auto flex w-full max-w-xl flex-col gap-12">
-        <div className={`flex items-center gap-2.5 ${fadeUp()}`}>
+        <div className={`flex items-center gap-2.5 ${fadeUp().className}`}>
           <Logo className="h-9 w-9" />
           <span className="text-xl font-bold text-dash-heading">
             Commit Pet
           </span>
         </div>
 
-        <div className={`flex flex-col gap-4 ${fadeUp(80)}`}>
+        <div
+          className={`flex flex-col gap-4 ${headline.className}`}
+          style={headline.style}
+        >
           <h1 className="max-w-[15ch] text-5xl leading-[1.1] font-bold tracking-tight text-dash-heading">
             A pet that grows as you commit.
           </h1>
@@ -107,7 +112,7 @@ export function AuthBrandPanel() {
           </p>
         </div>
 
-        <div className={fadeUp(160)}>
+        <div {...fadeUp(160)}>
           <StageStrip variant="full" />
         </div>
       </div>
@@ -119,6 +124,9 @@ export function AuthBrandPanel() {
 // instead of just a bare logo. Same brand moment as AuthBrandPanel (headline,
 // subtext, growth-stage strip) at mobile scale.
 export function MobileAuthHero() {
+  const headline = fadeUp(80);
+  const stageStrip = fadeUp(160);
+
   return (
     <div className="relative flex flex-col items-center gap-5 overflow-hidden bg-gradient-to-b from-dash-card to-dash-bg px-6 pt-12 pb-8 lg:hidden">
       <div
@@ -126,7 +134,7 @@ export function MobileAuthHero() {
         className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-dash-accent/10 blur-3xl"
       />
 
-      <div className={`flex items-center gap-2 ${fadeUp()}`}>
+      <div className={`flex items-center gap-2 ${fadeUp().className}`}>
         <Logo className="h-7 w-7" />
         <span className="text-base font-bold text-dash-heading">
           Commit Pet
@@ -134,7 +142,8 @@ export function MobileAuthHero() {
       </div>
 
       <div
-        className={`flex flex-col items-center gap-2 text-center ${fadeUp(80)}`}
+        className={`flex flex-col items-center gap-2 text-center ${headline.className}`}
+        style={headline.style}
       >
         <h1 className="max-w-[16ch] text-[26px] leading-[1.2] font-bold tracking-tight text-dash-heading">
           A pet that grows as you commit.
@@ -145,8 +154,32 @@ export function MobileAuthHero() {
         </p>
       </div>
 
-      <div className={`w-full max-w-xs ${fadeUp(160)}`}>
+      <div
+        className={`w-full max-w-xs ${stageStrip.className}`}
+        style={stageStrip.style}
+      >
         <StageStrip variant="compact" />
+      </div>
+    </div>
+  );
+}
+
+// Shared page shell for /sign-in and /sign-up — desktop split panel plus
+// mobile hero, with the Clerk widget (SignIn or SignUp) as children. Was
+// duplicated verbatim in both page files; this is the one copy.
+export function AuthShell({ children }: { children: ReactNode }) {
+  const widget = fadeUp(200);
+
+  return (
+    <div className="grid flex-1 lg:grid-cols-[1.15fr_1fr]">
+      <AuthBrandPanel />
+      <div className="flex flex-1 flex-col bg-dash-bg">
+        <MobileAuthHero />
+        <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 lg:py-16">
+          <div className={widget.className} style={widget.style}>
+            {children}
+          </div>
+        </div>
       </div>
     </div>
   );
