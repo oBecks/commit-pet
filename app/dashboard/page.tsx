@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAccessibleInstallationIds } from "@/lib/github/user-auth";
 import { getDashboardPets } from "@/lib/pets/dashboard-data";
-import { PetCard } from "./_components/PetCard";
+import { getMcpTokenStatus, type McpTokenStatus } from "@/lib/mcp/tokens";
+import { fadeUp } from "@/lib/ui/motion";
+import { PetsCarousel } from "./_components/PetsCarousel";
 
 export const metadata: Metadata = {
   title: "Your pets",
@@ -13,7 +15,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-7 px-6 py-10 sm:px-12 sm:py-10">
-      <div>
+      <div className={fadeUp()}>
         <h1 className="mb-1.5 text-2xl font-bold text-dash-heading sm:text-[26px]">
           Your pets
         </h1>
@@ -25,13 +27,17 @@ export default async function DashboardPage() {
       {installationIds === null ? (
         <ConnectGithubPrompt />
       ) : (
-        <PetsGrid installationIds={installationIds} />
+        <PetsSection installationIds={installationIds} />
       )}
     </div>
   );
 }
 
-async function PetsGrid({ installationIds }: { installationIds: number[] }) {
+async function PetsSection({
+  installationIds,
+}: {
+  installationIds: number[];
+}) {
   const pets = await getDashboardPets(installationIds);
 
   if (pets.length === 0) {
@@ -40,7 +46,7 @@ async function PetsGrid({ installationIds }: { installationIds: number[] }) {
         No pets yet —{" "}
         <a
           href="https://github.com/apps/commit-pet"
-          className="font-semibold text-dash-accent hover:text-[#C2560B]"
+          className="rounded-sm font-semibold text-dash-accent transition-colors duration-150 hover:text-[#C2560B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-dash-bg"
         >
           install Commit Pet
         </a>{" "}
@@ -49,13 +55,20 @@ async function PetsGrid({ installationIds }: { installationIds: number[] }) {
     );
   }
 
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {pets.map((pet) => (
-        <PetCard key={pet.repoId} pet={pet} />
-      ))}
-    </div>
+  // One extra query per pet — fine at the handful-of-repos scale this
+  // dashboard runs at. Keyed by repoId so PetsCarousel can look up whichever
+  // pet is currently selected without re-fetching on every swipe.
+  const tokenStatusEntries = await Promise.all(
+    pets.map(
+      async (pet): Promise<[string, McpTokenStatus]> => [
+        pet.repoId,
+        await getMcpTokenStatus(Number(pet.repoId)),
+      ],
+    ),
   );
+  const tokenStatuses = Object.fromEntries(tokenStatusEntries);
+
+  return <PetsCarousel pets={pets} tokenStatuses={tokenStatuses} />;
 }
 
 function ConnectGithubPrompt() {
@@ -64,7 +77,7 @@ function ConnectGithubPrompt() {
       Connect your GitHub account to see your repos&apos; pets —{" "}
       <Link
         href="/user-profile"
-        className="font-semibold text-dash-accent hover:text-[#C2560B]"
+        className="rounded-sm font-semibold text-dash-accent transition-colors duration-150 hover:text-[#C2560B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-dash-bg"
       >
         manage connected accounts
       </Link>

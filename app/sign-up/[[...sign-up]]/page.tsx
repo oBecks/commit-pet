@@ -1,15 +1,23 @@
 import { SignUp } from "@clerk/nextjs";
-import { Logo } from "@/app/_components/Logo";
+import { AuthBrandPanel, MobileAuthHero } from "@/app/_components/AuthBrandPanel";
 import { clerkAppearance } from "@/app/_components/clerk-appearance";
+import { fadeUp } from "@/lib/ui/motion";
 
 export default function SignUpPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 bg-dash-bg px-6 py-16">
-      <div className="flex items-center gap-2.5">
-        <Logo className="h-9 w-9" />
-        <span className="text-xl font-bold text-dash-heading">Commit Pet</span>
+    <div className="grid flex-1 lg:grid-cols-[1.15fr_1fr]">
+      <AuthBrandPanel />
+      <div className="flex flex-1 flex-col bg-dash-bg">
+        <MobileAuthHero />
+        <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 lg:py-16">
+          <div className={fadeUp(200)}>
+            <SignUp
+              appearance={clerkAppearance}
+              fallbackRedirectUrl="/dashboard"
+            />
+          </div>
+        </div>
       </div>
-      <SignUp appearance={clerkAppearance} fallbackRedirectUrl="/dashboard" />
     </div>
   );
 }

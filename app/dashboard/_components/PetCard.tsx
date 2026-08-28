@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { stageProgress } from "@/lib/pets/growth";
 import { moodFor } from "@/lib/pets/mood";
+import { repoShortName } from "@/lib/pets/repo-name";
 import type { DashboardPet } from "@/lib/pets/dashboard-data";
 import { PetArt } from "./PetArt";
 import { Bar } from "./Bar";
@@ -15,7 +15,10 @@ const XP_BAR_FILL = {
   sick: MOOD.sick.dot,
 } as const;
 
-export function PetCard({ pet }: { pet: DashboardPet }) {
+// Presentational only — no wrapping Link/button, so callers pick the
+// interaction (PetsCarousel wraps this in a selectable <button>). PetArt's
+// hover/focus scale is driven by a `group` class on whatever wraps this.
+export function PetCardContent({ pet }: { pet: DashboardPet }) {
   const { stage, floor, ceiling } = stageProgress(pet.xp);
   const mood = moodFor(pet.health, pet.sick);
   const progress = ceiling === null ? 1 : (pet.xp - floor) / (ceiling - floor);
@@ -25,10 +28,7 @@ export function PetCard({ pet }: { pet: DashboardPet }) {
       : `${pet.xp} / ${ceiling} XP`;
 
   return (
-    <Link
-      href={`/dashboard/${pet.repoId}`}
-      className="flex flex-col gap-4 rounded-2xl border border-dash-border bg-dash-card p-6 transition-shadow hover:shadow-md"
-    >
+    <>
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">
           <svg
@@ -45,19 +45,23 @@ export function PetCard({ pet }: { pet: DashboardPet }) {
             <path d="M3 9h18" />
           </svg>
           <span className="truncate text-sm font-semibold text-dash-heading">
-            {pet.fullName}
+            {repoShortName(pet.fullName)}
           </span>
         </div>
         <PhasePill phase={pet.phase} />
       </div>
 
       <div className="flex justify-center py-2">
-        <PetArt stage={stage} mood={mood} className="h-[140px] w-auto" />
+        <PetArt
+          stage={stage}
+          mood={mood}
+          className="h-[140px] w-auto transition-transform duration-300 ease-out group-hover:scale-105 group-focus-visible:scale-105"
+        />
       </div>
 
       <div>
         <Bar progress={progress} fillClassName={XP_BAR_FILL[mood]} />
-        <div className="mt-1.5 text-center text-xs text-dash-muted">
+        <div className="mt-1.5 text-center text-xs tabular-nums text-dash-muted">
           {pet.phase === "deployed"
             ? `Deployed ${pet.deployedRelative}`
             : progressLabel}
@@ -97,6 +101,6 @@ export function PetCard({ pet }: { pet: DashboardPet }) {
           "0 open issues"
         )}
       </div>
-    </Link>
+    </>
   );
 }

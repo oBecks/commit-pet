@@ -3,14 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAccessibleInstallationIds } from "@/lib/github/user-auth";
 import { getDashboardPet } from "@/lib/pets/dashboard-data";
+import { repoShortName } from "@/lib/pets/repo-name";
 import { getMcpTokenStatus } from "@/lib/mcp/tokens";
-import { Hero } from "../_components/Hero";
-import { GrowthCard } from "../_components/GrowthCard";
-import { OpenIssuesCard } from "../_components/OpenIssuesCard";
-import { HealthCard } from "../_components/HealthCard";
-import { BadgeCard } from "../_components/BadgeCard";
-import { RepoInfoCard } from "../_components/RepoInfoCard";
-import { McpTokenCard } from "../_components/McpTokenCard";
+import { fadeUp } from "@/lib/ui/motion";
+import { PetDetailSection } from "../_components/PetDetailSection";
 
 export async function generateMetadata({
   params,
@@ -47,7 +43,7 @@ export default async function PetDetailPage({
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-8 sm:px-12">
-      <div className="flex items-center gap-2 text-[13px]">
+      <div className={`flex items-center gap-2 text-[13px] ${fadeUp()}`}>
         <Link
           href="/dashboard"
           className="font-semibold text-dash-accent hover:text-[#C2560B]"
@@ -55,30 +51,10 @@ export default async function PetDetailPage({
           ← Dashboard
         </Link>
         <span className="text-dash-muted">/</span>
-        <span className="text-dash-muted">{pet.fullName}</span>
+        <span className="text-dash-muted">{repoShortName(pet.fullName)}</span>
       </div>
 
-      <div className="flex flex-col items-start gap-6 lg:flex-row">
-        <div className="flex min-w-0 flex-1 flex-col gap-6 lg:flex-[2]">
-          <Hero pet={pet} />
-          {pet.phase === "development" ? (
-            <GrowthCard pet={pet} />
-          ) : (
-            <OpenIssuesCard pet={pet} />
-          )}
-        </div>
-
-        <div className="flex w-full flex-col gap-6 lg:w-auto lg:flex-1">
-          <HealthCard pet={pet} />
-          <BadgeCard pet={pet} />
-          <McpTokenCard
-            repoId={pet.repoId}
-            hasToken={tokenStatus.exists}
-            lastUsedRelative={tokenStatus.lastUsedRelative}
-          />
-          <RepoInfoCard pet={pet} />
-        </div>
-      </div>
+      <PetDetailSection pet={pet} tokenStatus={tokenStatus} />
     </div>
   );
 }

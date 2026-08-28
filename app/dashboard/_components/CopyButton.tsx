@@ -37,7 +37,7 @@ export function CopyButton({
     <button
       type="button"
       onClick={handleClick}
-      className="flex items-center justify-center gap-1.5 rounded-lg border border-dash-border p-2 text-sm font-semibold text-dash-heading hover:bg-dash-neutral-pill"
+      className="flex items-center justify-center gap-1.5 rounded-lg border border-dash-border p-2 text-sm font-semibold text-dash-heading transition-[background-color,transform] duration-150 ease-out hover:bg-dash-neutral-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-dash-card active:scale-[0.97]"
     >
       <svg
         width="14"
@@ -51,11 +51,16 @@ export function CopyButton({
         <rect x="9" y="9" width="12" height="12" rx="2" />
         <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
       </svg>
-      {status === "copied"
-        ? "Copied!"
-        : status === "error"
-          ? "Couldn't copy"
-          : label}
+      <span
+        key={status}
+        className="motion-safe:animate-[fade-up_200ms_ease-out_both]"
+      >
+        {status === "copied"
+          ? "Copied!"
+          : status === "error"
+            ? "Couldn't copy"
+            : label}
+      </span>
     </button>
   );
 }
