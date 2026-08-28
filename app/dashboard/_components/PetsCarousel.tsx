@@ -58,7 +58,11 @@ export function PetsCarousel({
         ))}
       </div>
 
-      <PetDetailSection key={selected.repoId} pet={selected} tokenStatus={tokenStatus} />
+      <PetDetailSection
+        key={selected.repoId}
+        pet={selected}
+        tokenStatus={tokenStatus}
+      />
     </div>
   );
 }

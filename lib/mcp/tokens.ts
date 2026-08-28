@@ -69,7 +69,10 @@ export async function touchTokenLastUsed(rawToken: string): Promise<void> {
   }
 }
 
-export type McpTokenStatus = { exists: boolean; lastUsedRelative: string | null };
+export type McpTokenStatus = {
+  exists: boolean;
+  lastUsedRelative: string | null;
+};
 
 export async function getMcpTokenStatus(
   repoId: number,

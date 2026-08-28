@@ -1,5 +1,8 @@
 import { SignUp } from "@clerk/nextjs";
-import { AuthBrandPanel, MobileAuthHero } from "@/app/_components/AuthBrandPanel";
+import {
+  AuthBrandPanel,
+  MobileAuthHero,
+} from "@/app/_components/AuthBrandPanel";
 import { clerkAppearance } from "@/app/_components/clerk-appearance";
 import { fadeUp } from "@/lib/ui/motion";
 

@@ -33,11 +33,7 @@ export default async function DashboardPage() {
   );
 }
 
-async function PetsSection({
-  installationIds,
-}: {
-  installationIds: number[];
-}) {
+async function PetsSection({ installationIds }: { installationIds: number[] }) {
   const pets = await getDashboardPets(installationIds);
 
   if (pets.length === 0) {
@@ -59,12 +55,10 @@ async function PetsSection({
   // dashboard runs at. Keyed by repoId so PetsCarousel can look up whichever
   // pet is currently selected without re-fetching on every swipe.
   const tokenStatusEntries = await Promise.all(
-    pets.map(
-      async (pet): Promise<[string, McpTokenStatus]> => [
-        pet.repoId,
-        await getMcpTokenStatus(Number(pet.repoId)),
-      ],
-    ),
+    pets.map(async (pet): Promise<[string, McpTokenStatus]> => [
+      pet.repoId,
+      await getMcpTokenStatus(Number(pet.repoId)),
+    ]),
   );
   const tokenStatuses = Object.fromEntries(tokenStatusEntries);
 

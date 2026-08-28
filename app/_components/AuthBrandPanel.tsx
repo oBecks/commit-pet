@@ -35,7 +35,11 @@ const STAGE_STRIP_VARIANTS = {
 // Shared growth-stage row, sized differently for the desktop brand panel vs.
 // the compact mobile hero below. Labels are dropped on mobile — four
 // two-word labels don't fit at that width without wrapping into the chevrons.
-function StageStrip({ variant }: { variant: keyof typeof STAGE_STRIP_VARIANTS }) {
+function StageStrip({
+  variant,
+}: {
+  variant: keyof typeof STAGE_STRIP_VARIANTS;
+}) {
   const { artClassName, tileClassName, chevronSize, gapClassName, labels } =
     STAGE_STRIP_VARIANTS[variant];
 
@@ -129,7 +133,9 @@ export function MobileAuthHero() {
         </span>
       </div>
 
-      <div className={`flex flex-col items-center gap-2 text-center ${fadeUp(80)}`}>
+      <div
+        className={`flex flex-col items-center gap-2 text-center ${fadeUp(80)}`}
+      >
         <h1 className="max-w-[16ch] text-[26px] leading-[1.2] font-bold tracking-tight text-dash-heading">
           A pet that grows as you commit.
         </h1>
