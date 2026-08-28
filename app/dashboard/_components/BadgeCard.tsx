@@ -18,8 +18,9 @@ export function BadgeCard({ pet }: { pet: DashboardPet }) {
     );
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const svg = renderPetSvg(pet.xp, pet.health, pet.sick);
-  const snippet = `<img src="https://commit-pet.vercel.app/api/badge/${pet.repoId}" alt="commit-pet badge" width="195" height="286" />`;
+  const snippet = `<img src="${siteUrl}/api/badge/${pet.repoId}" alt="commit-pet badge" width="195" height="286" />`;
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-card p-6">
