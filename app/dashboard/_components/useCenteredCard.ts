@@ -88,5 +88,5 @@ export function useCenteredCard(initialId: string | undefined) {
     };
   }
 
-  return { centeredId, containerRef, register };
+  return { centeredId, containerRef, register, setCenteredId };
 }
