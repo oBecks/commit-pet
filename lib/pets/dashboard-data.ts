@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { repos, pets } from "@/lib/db/schema";
 import { currentHealth } from "./health";
@@ -61,11 +61,16 @@ export async function getDashboardPets(
 ): Promise<DashboardPet[]> {
   if (installationIds.length === 0) return [];
 
+  // Ordered explicitly (not left to whatever order Postgres happens to
+  // return): the Dashboard carousel treats the first pet as the default
+  // selection, so an unordered query would make that default nondeterministic
+  // across otherwise-identical requests.
   const rows = await db
     .select(PET_ROW_COLUMNS)
     .from(repos)
     .innerJoin(pets, eq(pets.repoId, repos.id))
-    .where(inArray(repos.installationId, installationIds));
+    .where(inArray(repos.installationId, installationIds))
+    .orderBy(asc(repos.createdAt));
 
   return rows.map(toDashboardPet);
 }

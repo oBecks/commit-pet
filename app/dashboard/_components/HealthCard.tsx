@@ -21,7 +21,9 @@ export function HealthCard({ pet }: { pet: DashboardPet }) {
     <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-card p-6">
       <h2 className="text-[15px] font-bold text-dash-heading">Health</h2>
       <div className="flex items-baseline gap-2.5">
-        <span className={`text-[32px] font-bold ${MOOD[mood].text}`}>
+        <span
+          className={`text-[32px] font-bold tabular-nums ${MOOD[mood].text}`}
+        >
           {pet.health}%
         </span>
         <MoodPill mood={mood} />

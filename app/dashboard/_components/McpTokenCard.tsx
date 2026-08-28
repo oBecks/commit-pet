@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { regenerateMcpToken } from "../[repoId]/actions";
 import { CopyButton } from "./CopyButton";
 
@@ -16,12 +17,20 @@ export function McpTokenCard({
   const [token, setToken] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
+  const router = useRouter();
 
   async function handleGenerate() {
     setPending(true);
     setError(false);
     try {
       setToken(await regenerateMcpToken(Number(repoId)));
+      // hasToken/lastUsedRelative are a server-fetched snapshot (see
+      // PetsSection in app/dashboard/page.tsx) — without this, they'd stay
+      // stale for the rest of the session. Doesn't affect what's on screen
+      // right now (the reveal below reads local `token` state, not the
+      // prop), but it means swiping away and back in the carousel won't
+      // show "No token generated yet" for a pet that already has one.
+      router.refresh();
     } catch {
       setError(true);
     } finally {
@@ -38,7 +47,7 @@ export function McpTokenCard({
       </p>
 
       {token ? (
-        <>
+        <div className="flex flex-col gap-3 motion-safe:animate-[fade-up_350ms_cubic-bezier(0.16,1,0.3,1)_both]">
           <div className="overflow-x-auto rounded-lg bg-[#2B2115] p-3">
             <code className="font-mono text-[11.5px] whitespace-pre text-[#F5EFE4]">
               {token}
@@ -49,7 +58,7 @@ export function McpTokenCard({
             MCP client, pointed at <code className="font-mono">/api/mcp</code>.
           </p>
           <CopyButton text={token} label="Copy token" />
-        </>
+        </div>
       ) : (
         <>
           <p className="text-xs text-dash-muted">
@@ -66,7 +75,7 @@ export function McpTokenCard({
             type="button"
             onClick={handleGenerate}
             disabled={pending}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-dash-border p-2 text-sm font-semibold text-dash-heading hover:bg-dash-neutral-pill disabled:opacity-50"
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-dash-border p-2 text-sm font-semibold text-dash-heading transition-[background-color,transform] duration-150 ease-out hover:bg-dash-neutral-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-dash-card active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100"
           >
             {pending
               ? "Generating…"

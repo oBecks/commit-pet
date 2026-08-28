@@ -12,7 +12,7 @@ export function ExternalLink({
   return (
     <a
       href={href}
-      className={`inline-flex items-center gap-1.5 font-semibold ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-dash-card ${className}`}
     >
       {children}
       <svg

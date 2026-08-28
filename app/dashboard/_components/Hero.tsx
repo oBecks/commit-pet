@@ -1,5 +1,6 @@
 import { stageForXp } from "@/lib/pets/growth";
 import { moodFor } from "@/lib/pets/mood";
+import { repoShortName } from "@/lib/pets/repo-name";
 import type { DashboardPet } from "@/lib/pets/dashboard-data";
 import { PetArt } from "./PetArt";
 import { MoodPill, PhasePill, StagePill } from "./Pills";
@@ -23,7 +24,7 @@ export function Hero({ pet }: { pet: DashboardPet }) {
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2.5">
           <h1 className="text-2xl font-bold text-dash-heading">
-            {pet.fullName}
+            {repoShortName(pet.fullName)}
           </h1>
           <PhasePill phase={pet.phase} />
         </div>

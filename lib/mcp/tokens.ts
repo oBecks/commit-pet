@@ -69,9 +69,14 @@ export async function touchTokenLastUsed(rawToken: string): Promise<void> {
   }
 }
 
+export type McpTokenStatus = {
+  exists: boolean;
+  lastUsedRelative: string | null;
+};
+
 export async function getMcpTokenStatus(
   repoId: number,
-): Promise<{ exists: boolean; lastUsedRelative: string | null }> {
+): Promise<McpTokenStatus> {
   const [row] = await db
     .select({ lastUsedAt: mcpTokens.lastUsedAt })
     .from(mcpTokens)

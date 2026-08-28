@@ -14,7 +14,7 @@ export function GrowthCard({ pet }: { pet: DashboardPet }) {
     <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-card p-6">
       <h2 className="text-[15px] font-bold text-dash-heading">Growth</h2>
       <Bar progress={progress} />
-      <span className="text-xs text-dash-muted">{label}</span>
+      <span className="text-xs tabular-nums text-dash-muted">{label}</span>
       <p className="text-xs text-dash-muted">
         {pet.lastCommitRelative
           ? `Last commit ${pet.lastCommitRelative}`
